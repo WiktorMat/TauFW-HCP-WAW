@@ -37,13 +37,13 @@ class ModuleMuTau(ModuleTauPair):
     # CORRECTIONS
     if self.ismc:
       self.muSFs      = MuonSFs(era=self.era,verb=self.verbosity) # muon id/iso/trigger SFs
-      self.tesTool    = TauESTool(tauSFVersion[self.year]) # real tau energy scale corrections
+      #self.tesTool    = TauESTool(tauSFVersion[self.year]) # real tau energy scale corrections #TO_DO
       #self.fesTool    = TauFESTool(tauSFVersion[self.year]) # e -> tau fake negligible
-      self.tauSFsT    = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Tight')
-      self.tauSFsM    = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Medium')
-      self.tauSFsT_dm = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Tight', dm=True)
-      self.etfSFs     = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSe',  'VLoose')
-      self.mtfSFs     = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSmu', 'Tight')
+      #self.tauSFsT    = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Tight')
+      #self.tauSFsM    = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Medium')
+      #self.tauSFsT_dm = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSjet','Tight', dm=True)
+      #self.etfSFs     = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSe',  'VLoose')
+      #self.mtfSFs     = TauIDSFTool(tauSFVersion[self.year],'DeepTau2017v2p1VSmu', 'Tight')
     
     # CUTFLOW
     self.out.cutflow.addcut('none',         "no cut"                     )
@@ -165,10 +165,10 @@ class ModuleMuTau(ModuleTauPair):
     
 
     # VETOES
-    extramuon_veto, extraelec_veto, dilepton_veto = getlepvetoes(event,[ ],[muon],[tau],self.channel)
-    self.out.extramuon_veto[0], self.out.extraelec_veto[0], self.out.dilepton_veto[0] = getlepvetoes(event,[ ],[muon],[ ],self.channel)
-    self.out.lepton_vetoes[0]       = self.out.extramuon_veto[0] or self.out.extraelec_veto[0] or self.out.dilepton_veto[0]
-    self.out.lepton_vetoes_notau[0] = extramuon_veto or extraelec_veto or dilepton_veto
+    #extramuon_veto, extraelec_veto, dilepton_veto = getlepvetoes(event,[ ],[muon],[tau],self.channel, self.era) #TO_DO
+    #self.out.extramuon_veto[0], self.out.extraelec_veto[0], self.out.dilepton_veto[0] = getlepvetoes(event,[ ],[muon],[ ],self.channel, self.era) #TO_DO
+    #self.out.lepton_vetoes[0]       = self.out.extramuon_veto[0] or self.out.extraelec_veto[0] or self.out.dilepton_veto[0]
+    #self.out.lepton_vetoes_notau[0] = extramuon_veto or extraelec_veto or dilepton_veto
     
     # TIGHTEN PRE-SELECTION
     if self.dotight: # do not save all events to reduce disk space
@@ -212,7 +212,7 @@ class ModuleMuTau(ModuleTauPair):
     self.out.q_2[0]                        = tau.charge
     self.out.dm_2[0]                       = tau.decayMode
     self.out.iso_2[0]                      = tau.rawIso
-    self.out.idiso_2[0]                    = idIso(tau) # cut-based tau isolation (rawIso)
+    #self.out.idiso_2[0]                    = idIso(tau) # cut-based tau isolation (rawIso) #TO_DO
     #self.out.rawAntiEle_2[0]               = tau.rawAntiEle # not available anymore in nanoAODv9
     #self.out.rawMVAoldDM2017v2_2[0]        = tau.rawMVAoldDM2017v2
     #self.out.rawMVAnewDM2017v2_2[0]        = tau.rawMVAnewDM2017v2
@@ -228,11 +228,11 @@ class ModuleMuTau(ModuleTauPair):
     self.out.idDeepTau2017v2p1VSe_2[0]     = tau.idDeepTau2017v2p1VSe
     self.out.idDeepTau2017v2p1VSmu_2[0]    = tau.idDeepTau2017v2p1VSmu
     self.out.idDeepTau2017v2p1VSjet_2[0]   = tau.idDeepTau2017v2p1VSjet
-    self.out.chargedIso_2[0]               = tau.chargedIso
-    self.out.neutralIso_2[0]               = tau.neutralIso
+    #self.out.chargedIso_2[0]               = tau.chargedIso #TO_DO
+    #self.out.neutralIso_2[0]               = tau.neutralIso #TO_DO
     self.out.leadTkPtOverTauPt_2[0]        = tau.leadTkPtOverTauPt
-    self.out.photonsOutsideSignalCone_2[0] = tau.photonsOutsideSignalCone
-    self.out.puCorr_2[0]                   = tau.puCorr
+    #self.out.photonsOutsideSignalCone_2[0] = tau.photonsOutsideSignalCone #TO_DO
+    #self.out.puCorr_2[0]                   = tau.puCorr #TO_DO
     
     
     # GENERATOR
