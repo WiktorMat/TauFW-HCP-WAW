@@ -489,9 +489,9 @@ class ModuleTauPair(Module):
     ###self.out.puppimetpt[0]             = event.PuppiMET_pt
     ###self.out.puppimetphi[0]            = event.PuppiMET_phi
     ###self.out.metsignificance[0]        = event.MET_significance
-    ###self.out.metcov00[0]               = event.MET_covXX
-    ###self.out.metcov01[0]               = event.MET_covXY
-    ###self.out.metcov11[0]               = event.MET_covYY
+    self.out.metcov00[0]               = event.PuppiMET_covXX #TO_DO
+    self.out.metcov01[0]               = event.PuppiMET_covXY #TO_DO
+    self.out.metcov11[0]               = event.PuppiMET_covYY #TO_DO
     ###self.out.fixedGridRhoFastjetAll[0] = event.fixedGridRhoFastjetAll
     
     # PZETA

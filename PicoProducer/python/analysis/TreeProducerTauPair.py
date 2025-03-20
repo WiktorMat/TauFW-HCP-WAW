@@ -119,12 +119,14 @@ class TreeProducerTauPair(TreeProducer):
     
     self.addBranch('met',                 'f')
     self.addBranch('metphi',              'f')
+    self.addBranch('metcov00',            'f')
+    self.addBranch('metcov01',            'f')
+    self.addBranch('metcov11',            'f')
     
     if module.ismc:
       self.addBranch('genmet',            'f', -1)
       self.addBranch('genmetphi',         'f', -9)
-    
-    
+
     #############
     #   OTHER   #
     #############

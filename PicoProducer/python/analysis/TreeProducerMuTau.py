@@ -103,4 +103,17 @@ class TreeProducerMuTau(TreeProducerTauPair):
         self.addBranch('ltfweightDown_2',   'f', 1.)
       if self.module.domutau:
         self.addBranch('mutaufilter',       '?', title="has tautau -> mutau, pT>18, |eta|<2.5")
+
     
+        
+    #############
+    #  HiggsCP  #
+    #############
+
+    self.addBranch('tau1_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
+    self.addBranch('tau1_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
+    self.addBranch('tau1_IP2', 'f', -1, title="Impact parameter of first tau, z-axis")
+    
+    self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
+    self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
+    self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
