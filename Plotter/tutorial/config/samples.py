@@ -82,7 +82,7 @@ def getsampleset(channel,era,**kwargs):
     kfactor_zz=1.524 # LO->NNLO+NLO_EW computed for 13.6 TeV
     kfactor_wz=1.414 # LO->NNLO+NLO_EW computed for 13.6 TeV 
 
-    setera(2022,cme=13.6)
+    setera(era,cme=13.6)
     cme=13.6 
       
     expsamples = [ # table of MC samples to be converted to Sample objects
@@ -135,7 +135,7 @@ def getsampleset(channel,era,**kwargs):
       #dataset = "SingleMuon_Run%d?"%year # need this one as well for C
       # TODO: need to somehow handle that we need SingleMuonC, MuonC, and MuonD for preEE
     elif era=='2022_postEE': dataset = "Muon_Run%d?"%year
-    elif era=='2022EE': dataset = "*Run%d*" % year
+    elif era=='2022EE': dataset = "Muon_Run%d*" % year
     else: dataset = "SingleMuon_Run%d?"%year
   elif 'etau'   in channel: dataset = "EGamma_Run%d?"%year if (year==2018 or year==2022) else "SingleElectron_Run%d?"%year
   elif 'ee'   in channel: dataset = "EGamma_Run%d?"%year if (year==2018 or year==2022) else "SingleElectron_Run%d?"%year
