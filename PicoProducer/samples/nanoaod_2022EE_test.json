@@ -29,14 +29,5 @@
     "ST_tW_top_LNu2Q": 16686824.0,
     "ST_tW_top_LNu2Q_ext1": 15824984.0,
     "ST_tW_antitop_LNu2Q": 16485400.0,
-    "ST_tW_antitop_LNu2Q_ext1": 17271609.0,
-    "Tau_Run2022E": 18625449,
-    "Tau_Run2022F": 69499773,
-    "Tau_Run2022G": 10556379,
-    "Muon_Run2022E": 61273036,
-    "Muon_Run2022F": 201927281,
-    "Muon_Run2022G": 34923953,
-    "MuonEG_Run2022E": 7755113,
-    "MuonEG_Run2022F": 23151724,
-    "MuonEG_Run2022G": 3775077
+    "ST_tW_antitop_LNu2Q_ext1": 17271609.0
 }
