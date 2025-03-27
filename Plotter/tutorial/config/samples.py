@@ -6,7 +6,8 @@ from TauFW.Plotter.sample.utils import LOG, STYLE, ensuredir, repkey, joincuts, 
 from TauFW.Plotter.sample.utils import getsampleset as _getsampleset
 import json
 
-f = open("../../PicoProducer/samples/nanoaod_sumw_2022_postEE.json")
+#f = open("../../PicoProducer/samples/nanoaod_sumw_2022_postEE.json")
+f = open("../../PicoProducer/samples/nanoaod_2022EE_test.json")
 nevts_json = json.load(f)
 
 def getsampleset(channel,era,**kwargs):
@@ -73,6 +74,55 @@ def getsampleset(channel,era,**kwargs):
      ( 'TT', "TTto4Q",                "ttbar hadronic",       346.4*kfactor_ttbar, {'extraweight': ttweight, 'nevts': nevts_json["TTto4Q"]} ), # NLO times BR times kfactor
      ( 'TT', "TTtoLNu2Q",             "ttbar semileptonic",   334.8*kfactor_ttbar, {'extraweight': ttweight, 'nevts':nevts_json["TTtoLNu2Q"]} ), # NLO times BR times kfactor
      ]
+  elif '2022EE' in era:
+    kfactor_dy=6282.6/5455.0 # LO->NNLO+NLO_EW k-factor computed for 13.6 TeV [https://twiki.cern.ch/twiki/bin/viewauth/CMS/MATRIXCrossSectionsat13p6TeV]
+    kfactor_wj=63425.1/55300 # LO->NNLO+NLO_EW k-factor computed for 13.6 TeV
+    kfactor_ttbar=923.6/762.1 # NLO->NNLO k-factor computed for 13.6 TeV
+    kfactor_ww=1.524 # LO->NNLO+NLO_EW computed for 13.6 TeV
+    kfactor_zz=1.524 # LO->NNLO+NLO_EW computed for 13.6 TeV
+    kfactor_wz=1.414 # LO->NNLO+NLO_EW computed for 13.6 TeV 
+
+    setera(2022,cme=13.6)
+    cme=13.6 
+      
+    expsamples = [ # table of MC samples to be converted to Sample objects
+        # GROUP NAME                     TITLE                 XSEC      EXTRA OPTIONS
+        # DY
+      ('DY', "DYto2L_M_50_madgraphMLM", "Drell-Yan 50", 5455.0 * kfactor_dy, { 'extraweight': dyweight, "nevts":nevts_json["DYto2L_M_50_madgraphMLM"]}),
+      ('DY', "DYto2L_M_50_1J_madgraphMLM", "Drell-Yan 1J 50", 978.3 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json["DYto2L_M_50_1J_madgraphMLM"]}),
+      ('DY', "DYto2L_M_50_2J_madgraphMLM", "Drell-Yan 2J 50", 315.1 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json["DYto2L_M_50_2J_madgraphMLM"]}),
+      ('DY', "DYto2L_M_50_3J_madgraphMLM", "Drell-Yan 3J 50", 93.7 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json["DYto2L_M_50_3J_madgraphMLM"]}),
+      ('DY', "DYto2L_M_50_4J_madgraphMLM", "Drell-Yan 4J 50", 45.4 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json["DYto2L_M_50_4J_madgraphMLM"]}),
+      # W + Jets LO samples
+      ('WJ', "WtoLNu_madgraphMLM", "W + jets", 55300.0 * kfactor_wj, {"nevts":nevts_json["WtoLNu_madgraphMLM"]}),
+      ('WJ', "WtoLNu_1J_madgraphMLM", "W + 1J", 9128.0 * kfactor_wj, {"nevts":nevts_json["WtoLNu_1J_madgraphMLM"]}),
+      ('WJ', "WtoLNu_2J_madgraphMLM", "W + 2J", 2922.0 * kfactor_wj, {"nevts":nevts_json["WtoLNu_2J_madgraphMLM"]}),
+      ('WJ', "WtoLNu_3J_madgraphMLM", "W + 3J", 861.3 * kfactor_wj, {"nevts":nevts_json["WtoLNu_3J_madgraphMLM"]}),
+      ('WJ', "WtoLNu_4J_madgraphMLM", "W + 4J", 415.4 * kfactor_wj, {"nevts":nevts_json["WtoLNu_4J_madgraphMLM"]}),
+      # TTbar
+      ('TT', "TTto2L2Nu", "ttbar 2l2#nu", 80.9 * kfactor_ttbar, {'extraweight': ttweight, "nevts":nevts_json["TTto2L2Nu"]}),
+      ('TT', "TTto4Q", "ttbar hadronic", 346.4 * kfactor_ttbar, {'extraweight': ttweight, "nevts":nevts_json["TTto4Q"]}),
+      ('TT', "TTtoLNu2Q", "ttbar semileptonic", 334.8 * kfactor_ttbar, {'extraweight': ttweight, "nevts":nevts_json["TTtoLNu2Q"]}),
+      # Diboson
+      ('VV', "WW", "WW", 80.23 * kfactor_ww, {"nevts":nevts_json["WW"]}),
+      ('VV', "WZ", "WZ", 29.1 * kfactor_wz, {"nevts":nevts_json["WZ"]}),
+      ('VV', "ZZ", "ZZ", 12.75 * kfactor_zz, {"nevts":nevts_json["ZZ"]}),
+      # Single top ###FIX XSEC
+      #('ST', "ST_t_channel_top_4f_InclusiveDecays", "ST t-channel t", 123.8, {"nevts":nevts_json["ST_t_channel_top_4f_InclusiveDecays"]}),
+      #('ST', "ST_t_channel_antitop_4f_InclusiveDecays", "ST t-channel at", 75.47, {"nevts":nevts_json["ST_t_channel_antitop_4f_InclusiveDecays"]}),
+      #('ST', "ST_tW_top_2L2Nu", "ST tW semileptonic", 15.8, {"nevts":nevts_json["ST_tW_top_2L2Nu"]}),
+      #('ST', "ST_tW_top_2L2Nu_ext1", "ST tW 2l2#nu", 3.8),
+      #('ST', "ST_tW_antitop_2L2Nu", "ST atW semileptonic", 15.9, {"nevts":nevts_json["ST_tW_antitop_2L2Nu"]}),
+      #('ST', "ST_tW_antitop_2L2Nu_ext1", "ST atW 2l2#nu", 3.8),
+      #('ST', "ST_tW_top_4Q", "ST tW top 4Q", 123.8, {"nevts":nevts_json["ST_tW_top_4Q"]}),
+      #('ST', "ST_tW_top_4Q_ext1", "ST tW top 4Q ext1", 75.47),
+      #('ST', "ST_tW_antitop_4Q", "ST tW antitop 4Q", 123.8),
+      #('ST', "ST_tW_antitop_4Q_ext1", "ST tW antitop 4Q ext1", 75.47),
+      #('ST', "ST_tW_top_LNu2Q", "ST tW top LNu2Q", 123.8),
+      #('ST', "ST_tW_top_LNu2Q_ext1", "ST tW top LNu2Q ext1", 75.47),
+      #('ST', "ST_tW_antitop_LNu2Q", "ST atW antitop LNu2Q", 123.8),
+      #('ST', "ST_tW_antitop_LNu2Q_ext1", "ST atW antitop LNu2Q ext1", 75.47)
+      ]   
   else:
     LOG.throw(IOError,"Did not recognize era %r!"%(era))
   
@@ -85,6 +135,7 @@ def getsampleset(channel,era,**kwargs):
       #dataset = "SingleMuon_Run%d?"%year # need this one as well for C
       # TODO: need to somehow handle that we need SingleMuonC, MuonC, and MuonD for preEE
     elif era=='2022_postEE': dataset = "Muon_Run%d?"%year
+    elif era=='2022EE': dataset = "*Run%d*" % year
     else: dataset = "SingleMuon_Run%d?"%year
   elif 'etau'   in channel: dataset = "EGamma_Run%d?"%year if (year==2018 or year==2022) else "SingleElectron_Run%d?"%year
   elif 'ee'   in channel: dataset = "EGamma_Run%d?"%year if (year==2018 or year==2022) else "SingleElectron_Run%d?"%year
@@ -124,6 +175,9 @@ def getsampleset(channel,era,**kwargs):
   sampleset = _getsampleset(datasample,expsamples,channel=channel,era=era,**kwargs)
   LOG.verb("weight = %r"%(weight),verbosity,1)
   
+  if '2022EE' in era:
+    sampleset.stitch("W*LNu*",    incl='WtoLNu_madgraphMLM',  name='WJ', cme=cme) # W + jets
+    sampleset.stitch("DYto2L*", incl='DYto2L_M_50_madgraphMLM', name="DY", cme=cme)
   
   # JOIN
   sampleset.join('DY', name='DY' ) # Drell-Yan, M < 50 GeV + M > 50 GeV
