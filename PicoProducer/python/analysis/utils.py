@@ -392,8 +392,8 @@ def getlepvetoes(event, electrons, muons, taus, channel, era):
   looseElectrons = [ ]
   for electron in Collection(event,'Electron'): 
     if '2022' in era:
-      electronIso90=electron.mvaIso_Fall17V2_WP90
-      electronIso=electron.mvaIso_Fall17V2_WPL
+      electronIso90=electron.mvaIso_WP90 #Winter22V1# old was: electronIso90=electron.mvaIso_Fall17V2_WP90
+      electronIso=electron.mvaIso    #Winter22V1# old was: electronIso=electron.mvaIso_Fall17V2_WPL
     elif '2023' in era:
       electronIso90=electron.mvaIso_WP90
       electronIso=electron.mvaIso
@@ -467,7 +467,7 @@ class DiTauPair(LeptonPair):
 def getTotalWeight(file, selections=[""]):
   # This function was proposed by Konstantin Androsov to solve the problem with normalization of WJets. It should work also for skimmed data
   # Allow to define (truth level) cuts to compute sum weight for given phase space -- needed for stitching ; giving list of different selection scenarios to compute
-    total_w = []
+    total_w = [0] * len(selections)
     for tree_name in [ 'Events', 'EventsNotSelected' ]:
         df = RDataFrame(tree_name, file)
         df = df.Define('genWeightD', 'std::copysign<double>(1., genWeight)')
