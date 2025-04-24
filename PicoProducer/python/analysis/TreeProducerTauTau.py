@@ -112,3 +112,21 @@ class TreeProducerTauTau(TreeProducerTauPair):
         self.addBranch('ltfweightDown_1',        'f', 1.)
         self.addBranch('ltfweightDown_2',        'f', 1.)
     
+    #############
+    #  HiggsCP  #
+    #############
+
+    self.addBranch('tau1_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
+    self.addBranch('tau1_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
+    self.addBranch('tau1_IP2', 'f', -1, title="Impact parameter of first tau, z-axis")
+    
+    self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
+    self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
+    self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+
+    self.addBranch('phiCP', 'f', -1, title="Measured/reconstructed acoplanarity angle (sensitive to CP violation) in H->tautau decay. Result should be reweighed with tau spinner weights.")
+    self.addBranch('genPhiCP', 'f', -1, title="Acoplanarity angle (sensitive to CP violation) in H->tautau decay, reconstructed from gen-level information. Result should be reweighed with tau spinner weights.")
+
+    self.addBranch('tauspinner_weight_even', 'f', -1, title="Tau spinner weight for CP even hypothesis")
+    self.addBranch('tauspinner_weight_odd', 'f', -1, title="Tau spinner weight for CP odd hypothesis")
+    self.addBranch('tauspinner_weight_mix', 'f', -1, title="Tau spinner weight for mixed CP hypothesis")
