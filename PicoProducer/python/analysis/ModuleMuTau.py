@@ -7,26 +7,25 @@ from TauFW.PicoProducer.analysis.ModuleTauPair import *
 from TauFW.PicoProducer.analysis.utils import LeptonTauPair, loosestIso, idIso, matchgenvistau, matchtaujet, filtermutau
 from TauFW.PicoProducer.corrections.MuonSFs import *
 #from TauFW.PicoProducer.corrections.TrigObjMatcher import loadTriggerDataFromJSON, TrigObjMatcher
-from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, campaigns
-from correctionlib import _core
-fname = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/TAU/2022_Summer22EE/tau_DeepTau2018v2p5_2022_postEE.json.gz"
-#"/eos/user/h/haawedik/Work/json/tau_DeepTau2018v2p5_2022_postEE_fixed.json"
-# fname = "/eos/user/h/haawedik/Work/json/tau_DeepTau2018v2p5_2022_postEE.json"
-from TauFW.PicoProducer.data.jsonpog.POG.TAU.DeepTau2018v2p5SFTool import DeepTau2018v2p5SFTool # NEW CLASS
-if fname.endswith(".json.gz"):
-  import gzip
-  with gzip.open(fname,'rt') as file:
-    #data = json.load(file)
-    data = file.read().strip()
-  cset = _core.CorrectionSet.from_string(data)
-else:
-  cset = _core.CorrectionSet.from_file(fname)
+#from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, campaigns # old way, corrections from root files
+
+# sys.path.append('~/CMSSW_14_1_0_pre4/src')
+from TauFW.PicoProducer.corrections.DeepTau2018v2p5SFTool import DeepTau2018v2p5SFTool # NEW Tool for tau SFs and TES from correctionlib
+
+wp_vsjet, wp_vse, wp_vsmu, syst = "Medium", "VVLoose", "Tight", "nom"
 class ModuleMuTau(ModuleTauPair):
   
   def __init__(self, fname, **kwargs):
     kwargs['channel'] = 'mutau'
     super(ModuleMuTau,self).__init__(fname,**kwargs)
     self.out = TreeProducerMuTau(fname,self)
+    self.deepTauSFTool = DeepTau2018v2p5SFTool(self.era) #NEW
+    
+    # TODO: remove hardcoded values and make wps configurable
+    self.wp_vsjet = "Medium"
+    self.wp_vse   = "VVLoose"
+    self.wp_vsmu  = "Tight"
+    self.syst     = "nom"
     
     # TRIGGERS
     if self.year==2016:
@@ -132,7 +131,7 @@ class ModuleMuTau(ModuleTauPair):
 
       
       if self.ismc:
-        self.out.tau_pt_NOcorr[0] = tau.pt
+        self.out.tau_pt_preSF[0] = tau.pt
         tau.es   = 1 # store energy scale for propagating to MET
         genmatch = tau.genPartFlav
         if genmatch==5: # real tau
@@ -144,11 +143,8 @@ class ModuleMuTau(ModuleTauPair):
             tau.pt   *= tes
             tau.mass *= tes
             tau.es    = tes # store for later reuse
-          if self.year in ["2022"]: # add others, only tested for 2022EE
-            tau_energy_scale_corr = cset["tau_energy_scale"]
-            tau_pt = tau.pt
-            wp_vsjet, wp_vse, wp_vsmu, syst = "Medium", "VVLoose", "Tight", "nom"
-            tes_correction = tau_energy_scale_corr.evaluate(tau_pt, tau.eta, tau.decayMode, 5, "DeepTau2018v2p5", wp_vsjet, wp_vse, syst)
+          if self.era in ["2022EE"]: #, "2018UL", "2022_preEE", "2022_postEE", "2023", "2023BPix"]: # only for some samples, otherwise no corrections from correctionlib
+            tes_correction = self.deepTauSFTool.tes(tau.pt, tau.eta, tau.decayMode, 5, self.wp_vsjet, self.wp_vse, self.syst)
             self.out.tes_sf[0] = tes_correction
             tau.pt   *= tes_correction
             tau.mass *= tes_correction
@@ -318,46 +314,57 @@ class ModuleMuTau(ModuleTauPair):
         self.out.idweightDown_dm_2[0] = 1.
         self.out.ltfweightUp_2[0]     = 1.
         self.out.ltfweightDown_2[0]   = 1.
-      if self.year==2022: #By default every weight set to 1.0
-        deep_tau_vsjet_corr = cset["DeepTau2018v2p5VSjet"]
-        deep_tau_vse_corr = cset["DeepTau2018v2p5VSe"]
-        tau_trigger_corr = cset["tau_trigger"]
-        deep_tau_vsmu_corr = cset["DeepTau2018v2p5VSmu"]
-        tau_pt, tau_eta, tau_dm, tau_genmatch = tau.pt, tau.eta, tau.decayMode, tau.genPartFlav #pt_2[0], eta_2[0], dm_2[0], genmatch_2[0] or self.out.genmatch_2[0]?
-        wp_vsjet, wp_vse, wp_vsmu, syst = "Medium", "VVLoose", "Tight", "nom" #defaults
+      if self.era in ["2022EE"]: #, "2018UL", "2022_preEE", "2022_postEE", "2023", "2023BPix"]: # only tested for 2022EE
         if genmatch==5: # real tau # genmatch =  1 or 3 electron ; 2 or 4 muon
-          sf_vsjet = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "pt")
-          sf_vsjet_dm = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "dm")
-          self.out.idweight_2[0] = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "pt")
-          self.out.idweight_dm_2[0]        = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "dm")
-          self.out.idweight_medium_2[0]   = 1.0 # for now 
+          self.out.idweight_2[0]        = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, self.syst, "pt")
+          self.out.idweight_dm_2[0]     = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, self.syst, "dm")
+          self.out.idweight_medium_2[0] = 1.0 # for now 
           if self.dosys:
-            sf_vsjet_Up = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "pt")
-            sf_vsjet_Down = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "pt")
-            sf_vsjet_dm_Up = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "dm")
-            sf_vsjet_dm_Down = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "dm")
-            self.out.idweightUp_2[0]    = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "pt")
-            self.out.idweightDown_2[0]  = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "pt")
-            self.out.idweightUp_dm_2[0]   = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "dm")
-            self.out.idweightDown_dm_2[0] = deep_tau_vsjet_corr.evaluate(tau_pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "dm")
+            self.out.idweightUp_2[0]      = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, "up", "pt")
+            self.out.idweightDown_2[0]    = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, "down", "pt")
+            self.out.idweightUp_dm_2[0]   = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, "up", "dm")
+            self.out.idweightDown_dm_2[0] = self.deepTauSFTool.sf_vsjet(tau.pt, tau.decayMode, tau.genPartFlav, self.wp_vsjet, self.wp_vse, "down", "dm")
         elif genmatch in [1,3]: # electron -> tau fake
-          sf_vse = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, syst)
-          self.out.ltfweight_2[0]         = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, syst) 
+          self.out.ltfweight_2[0]         =  self.deepTauSFTool.sf_vse(tau.eta, tau.decayMode, tau.genPartFlav, self.wp_vse, self.syst)
           if self.dosys:
-            sf_vse_Up = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "up")
-            sf_vse_Down = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "down")
-            self.out.ltfweightUp_2[0]   = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "up")
-            self.out.ltfweightDown_2[0] = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "down")
+            self.out.ltfweightUp_2[0] = self.deepTauSFTool.sf_vse(tau.eta, tau.decayMode, tau.genPartFlav, self.wp_vse, "up")
+            self.out.ltfweightDown_2[0] = self.deepTauSFTool.sf_vse(tau.eta, tau.decayMode, tau.genPartFlav, self.wp_vse, "down")
         elif genmatch in [2,4]: #  muon -> tau fake
-          sf_vsmu = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, syst)
-          self.out.ltfweight_2[0]         = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, syst)          
+          self.out.ltfweight_2[0]         = self.deepTauSFTool.sf_vsmu(tau.eta, tau.genPartFlav, self.wp_vsmu, self.syst) 
           if self.dosys:
-            sf_vsmu_Up = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "up")
-            sf_vsmu_Down = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "down")
-            self.out.ltfweightUp_2[0]   = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "up")
-            self.out.ltfweightDown_2[0] = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "down")
+            self.out.ltfweightUp_2[0] = self.deepTauSFTool.sf_vsmu(tau.eta, tau.genPartFlav, self.wp_vsmu, "up")
+            self.out.ltfweightDown_2[0] = self.deepTauSFTool.sf_vsmu(tau.eta, tau.genPartFlav, self.wp_vsmu, "down")
+      print(">>> %s: %s %s %s %s %s %s %s %s %s"%(self.era, tau.pt, tau.eta, tau.decayMode, tau.genPartFlav, self.out.idweight_2[0], self.out.idweight_dm_2[0], self.out.ltfweight_2[0], self.out.trigweight_2[0], self.out.idweight_medium_2[0]))
+## basic idea, for testing ##
+# from correctionlib import _core
+# fname = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/TAU/2022_Summer22EE/tau_DeepTau2018v2p5_2022_postEE.json.gz"
+# if fname.endswith(".json.gz"):
+#   import gzip
+#   with gzip.open(fname,'rt') as file:
+#     #data = json.load(file)
+#     data = file.read().strip()
+#   cset = _core.CorrectionSet.from_string(data)
+# else:
+#   cset = _core.CorrectionSet.from_file(fname)
+# deep_tau_vsjet_corr = cset["DeepTau2018v2p5VSjet"]
+# deep_tau_vse_corr = cset["DeepTau2018v2p5VSe"]
+# tau_trigger_corr = cset["tau_trigger"]
+# deep_tau_vsmu_corr = cset["DeepTau2018v2p5VSmu"]
+# sf_vsjet = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "pt")
+# sf_vsjet_dm = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, syst, "dm")
+# sf_vsjet_Up = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "pt")
+# sf_vsjet_Down = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "pt")
+# sf_vsjet_dm_Up = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "up", "dm")
+# sf_vsjet_dm_Down = deep_tau_vsjet_corr.evaluate(tau.pt, tau_dm, tau_genmatch, wp_vsjet, wp_vse, "down", "dm")
+# sf_vse = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, syst)
+# sf_vse_Up = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "up")
+# sf_vse_Down = deep_tau_vse_corr.evaluate(tau_eta, tau_dm, tau_genmatch, wp_vse, "down")
+# sf_vsmu = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, syst)
+# sf_vsmu_Up = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "up")
+# sf_vsmu_Down = deep_tau_vsmu_corr.evaluate(tau_eta, tau_genmatch, wp_vsmu, "down")
                                ###################################
       """
+      # Old way, corrections from root files. 
       # TAU WEIGHTS
       if tau.genPartFlav==5: # real tau
         self.out.idweight_2[0]        = self.tauSFsT.getSFvsPT(tau.pt)
