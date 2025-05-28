@@ -1,35 +1,27 @@
 import vector
 import numpy as np
+import ROOT
+import math
 
 PI_PLUS_MASS = 0.13957
 PI_ZERO_MASS = 0.1349766
 RHO_ZERO_MASS = 0.77526
 ELECTRON_MASS = 0.000511
-
-ZERO_4VECTOR = vector.array(
-        {
-            "pt": [0],
-            "eta": [0],
-            "phi": [0],
-            "M": [0]
-        }
-    )
+TAU_MASS = 1.77686
 
 def get_chargedPion_4momentum(tauProd):
     eta = tauProd.eta
-    pdgID = tauProd.pdgId
-    pt = tauProd.pt
     phi = tauProd.phi
-    #tau_index = tauProd.tauIdx
+    pt = tauProd.pt
 
-    return vector.array(
-        {
-            "pt": [pt],
-            "eta": [eta],
-            "phi": [phi],
-            "M": [PI_PLUS_MASS]
-        }
-    )
+    px = pt * math.cos(phi)
+    py = pt * math.sin(phi)
+    pz = pt * math.sinh(eta)
+    energy = math.sqrt(px**2 + py**2 + pz**2 + PI_PLUS_MASS**2)
+
+    p4 = ROOT.TLorentzVector()
+    p4.SetPxPyPzE(px, py, pz, energy)
+    return p4
 
 def get_lepton_4momentum(particle):
     pt = particle.pt
@@ -38,7 +30,7 @@ def get_lepton_4momentum(particle):
 
     pdgid = abs(particle.pdgId)
     
-    # Ustal masę na podstawie typu cząstki (PDG ID)
+    # Mass from PDG ID
     if abs(pdgid) == 15:  # tau
         mass = 1.77686
     elif abs(pdgid) in [12, 14, 16]:  # neutrino e, mu, tau
@@ -52,14 +44,17 @@ def get_lepton_4momentum(particle):
     elif abs(pdgid) == 13:  # muon
         mass = 0.105658
     else:
-        mass = particle.mass  # fallback (jeśli root podał coś konkretnego)
+        mass = particle.mass  # fallback
 
-    return vector.obj(
-        pt=pt,
-        eta=eta,
-        phi=phi,
-        mass=mass
-    )
+    px = pt * math.cos(phi)
+    py = pt * math.sin(phi)
+    pz = pt * math.sinh(eta)
+    e  = math.sqrt(px**2 + py**2 + pz**2 + mass**2)
+
+    vec = ROOT.TLorentzVector()
+    vec.SetPxPyPzE(px, py, pz, e)
+
+    return vec
 
 def calculate_zmf(p1, p2):
     
@@ -75,17 +70,18 @@ def calculate_zmf(p1, p2):
     return beta
 
 def get_lambda(lepton):
-
-    return vector.array(
-        {
-            "px": [lepton.IPx],
-            "py": [lepton.IPy],
-            "pz": [lepton.IPz],
-            "E": [0],
-        }
-    )
+    lambda_vec = ROOT.TLorentzVector()
+    lambda_vec.SetPxPyPzE(lepton.IPx, lepton.IPy, lepton.IPz, 0.0)
+    return lambda_vec
 
 def get_perpendicular_component(vector, reference):
-    projection = (vector.dot(reference)) * reference
+    reference_unit = reference.Unit()
+    projection = reference_unit * vector.Dot(reference_unit)
     perpendicular = vector - projection
-    return perpendicular.unit()
+    return perpendicular.Unit()
+
+def make_tlorentzvector(px, py, pz, mass=TAU_MASS):
+    p2 = px**2 + py**2 + pz**2
+    energy = math.sqrt(p2 + mass**2)
+    vec = ROOT.TLorentzVector(px, py, pz, energy)
+    return vec

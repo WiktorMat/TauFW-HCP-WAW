@@ -10,7 +10,11 @@ from TauFW.PicoProducer.corrections.TrigObjMatcher import TrigObjMatcher
 from TauFW.PicoProducer.corrections.TauTriggerSFs import TauTriggerSFs
 from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, TauFESTool
 from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_tautau_reco import *
-from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_tautau_genreco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_tautau_gen_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.GenParticles import *
+from TauFW.PicoProducer.FastMTT.FastMTT import FastMTT
+from TauFW.PicoProducer.analysis.HiggsCPtools.Polarimetric import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.Data_Dump import *
 
 
 class ModuleTauTau(ModuleTauPair):
@@ -23,8 +27,8 @@ class ModuleTauTau(ModuleTauPair):
     # TRIGGERS
     jsonfile       = os.path.join(datadir,"trigger/tau_triggers_%d.json"%(self.year))
     #self.trigger   = TrigObjMatcher(jsonfile,trigger='ditau',isdata=self.isdata) #TO_DO
-    self.tauCutPt  = 40
-    self.tauCutEta = 2.1
+    self.tauCutPt  = 20 #Tightened from 40 for test analyses during development
+    self.tauCutEta = 2.5 #Tightened from 2.1 for test analyses during development
     
     # CORRECTIONS
     #if self.ismc:
@@ -78,7 +82,7 @@ class ModuleTauTau(ModuleTauPair):
     for tau in Collection(event,'Tau'):
       if abs(tau.eta)>self.tauCutEta: continue
       if abs(tau.dz)>0.2: continue
-      if tau.decayMode not in [0,1,10,11]: continue
+      if tau.decayMode not in [0,1,2,10,11]: continue
       if abs(tau.charge)!=1: continue
       if tau.idDeepTau2017v2p1VSe<1: continue   # VVVLoose
       if tau.idDeepTau2017v2p1VSmu<1: continue  # VLoose
@@ -129,6 +133,25 @@ class ModuleTauTau(ModuleTauPair):
     tau2.tlv   = tau2.p4()
     self.out.cutflow.fill('pair')
 
+    ### FastMTT ###
+
+    measuredTauLeptons = np.array([[[1, tau1.pt, tau1.eta, tau1.phi, tau1.mass, tau1.decayMode], [1, tau2.pt, tau2.eta, tau2.phi, tau2.mass, tau2.decayMode]]])
+    METx = np.array([event.PFMET_pt * np.cos(event.PFMET_phi)])
+    METy = np.array([event.PFMET_pt * np.sin(event.PFMET_phi)])
+    covMET = np.array([[[event.PFMET_covXX, event.PFMET_covXY], [event.PFMET_covXY, event.PFMET_covYY]]])
+
+    fMTT = FastMTT()
+    fMTT.TimeReport = False
+    fMTT.myLikelihood.setWindow = [123, 127]
+    fMTT.myLikelihood.enableLikelihoodComponents(window = True)
+    fMTT.run(measuredTauLeptons, METx, METy, covMET)
+
+    mFast = fMTT.mass[0]
+    fMTT_tau1P4 = fMTT.tau1P4[0]
+    fMTT_tau2P4 = fMTT.tau2P4[0]
+    X1 = fMTT.BestX[0, 0]
+    X2 = fMTT.BestX[0, 1]
+
     ### CP ACOPLANARITY ANGLE ###
 
     tau_products1 = []
@@ -139,26 +162,38 @@ class ModuleTauTau(ModuleTauPair):
       elif product.tauIdx == 1:
         tau_products2.append(product)
 
-    genParticles = []
-    for genParticle in Collection(event,'GenPart'):
-      genParticles.append(genParticle)
+    tau1_products_list = dump_tau_products(tau_products1, number_of_products=5)
+    tau2_products_list = dump_tau_products(tau_products2, number_of_products=5)
 
-    genVisTau = []
-    for genParticle in Collection(event,'GenVisTau'):
-      genVisTau.append(genParticle)
+    if self.ismc:
+      genParticles = []
+      for genParticle in Collection(event,'GenPart'):
+        genParticles.append(genParticle)
 
+      genVisTau = []
+      for genParticle in Collection(event,'GenVisTau'):
+        genVisTau.append(genParticle)
+
+      genTau1, genTau1_daughters = find_true_tau(tau1, genParticles, genVisTau)
+      genTau2, genTau2_daughters = find_true_tau(tau2, genParticles, genVisTau)
+      gen_tau1_products = dump_tau_products(genTau1_daughters, number_of_products=5)
+      gen_tau2_products = dump_tau_products(genTau2_daughters, number_of_products=5)
+    
     phi_cp = PhiCP_tautau_reco(tau1, tau2, tau_products1, tau_products2)
-    phi_cp_true = PhiCP_tautau_genReco(tau1, tau2, genParticles, genVisTau)
-    print("Phi CP: ", phi_cp)
-      #print(tauProd.pdgId)
-      #if tauProd.pdgId == 211:
-      #  charged_pions.append(tauProd)
+    if self.ismc:
+      phi_cp_true = PhiCP_tautau_genReco(tau1, tau2, genParticles, genVisTau)
 
-      #if (tau.decayMode == 10 or tau.decayMode == 11) and tauProd.pdgId == 22:
-      #  print(tau.decayMode)
-      #  print("Photon!")
-
-    ### TEST ^ ###
+    '''
+    ### FOR TESTS IN TAU -> RHO^pm DECAY ###
+    if tau1.decayMode in [1, 2] and tau2.decayMode in [1, 2] and tau1.decayModePNet == 1 and tau2.decayModePNet == 1:
+      phi_cp = PhiCP_tautau_reco(tau1, tau2, tau_products1, tau_products2)
+      #phi_cp = Polarimetric_phiCP_dm1_dm1_gen(tau1, tau2, fMTT_tau1P4, fMTT_tau2P4, tau_products1, tau_products2, genParticles, genVisTau)
+      phi_cp_true = Polarimetric_phiCP_dm1_dm1_reco(tau1, tau2, fMTT_tau1P4, fMTT_tau2P4, tau_products1, tau_products2)
+      #phi_cp_true = Polarimetric_better_tau_solution(tau1, tau2, fMTT_tau1P4, fMTT_tau2P4, tau_products1, tau_products2, genParticles, genVisTau)
+    else:
+      phi_cp = -1
+      phi_cp_true = -1
+    '''
     
     
     # VETOS
@@ -182,6 +217,7 @@ class ModuleTauTau(ModuleTauPair):
     self.out.dz_1[0]                       = tau1.dz
     self.out.q_1[0]                        = tau1.charge
     self.out.dm_1[0]                       = tau1.decayMode
+    self.out.dm_PNet_1[0]                 = tau1.decayModePNet
     self.out.iso_1[0]                      = tau1.rawIso
     #self.out.idiso_1[0]                    = idIso(tau1) # cut-based tau isolation (rawIso) #TO_DO
     self.out.rawDeepTau2017v2p1VSe_1[0]    = tau1.rawDeepTau2017v2p1VSe
@@ -213,6 +249,7 @@ class ModuleTauTau(ModuleTauPair):
     self.out.dz_2[0]                       = tau2.dz
     self.out.q_2[0]                        = tau2.charge
     self.out.dm_2[0]                       = tau2.decayMode
+    self.out.dm_PNet_2[0]                 = tau2.decayModePNet
     self.out.iso_2[0]                      = tau2.rawIso
     #self.out.idiso_2[0]                    = idIso(tau2) # cut-based tau isolation (rawIso) #TO_DO
     self.out.rawDeepTau2017v2p1VSe_2[0]    = tau2.rawDeepTau2017v2p1VSe
@@ -252,8 +289,9 @@ class ModuleTauTau(ModuleTauPair):
     
     # JETS
     jets, met, njets_vars, met_vars = self.fillJetBranches(event,tau1,tau2)
-    self.out.jpt_match_1[0], self.out.jpt_genmatch_1[0] = matchtaujet(event,tau1,self.ismc)
-    self.out.jpt_match_2[0], self.out.jpt_genmatch_2[0] = matchtaujet(event,tau2,self.ismc)
+    if self.ismc:
+      self.out.jpt_match_1[0], self.out.jpt_genmatch_1[0] = matchtaujet(event,tau1,self.ismc)
+      self.out.jpt_match_2[0], self.out.jpt_genmatch_2[0] = matchtaujet(event,tau2,self.ismc)
     
     
     # WEIGHTS
@@ -324,12 +362,53 @@ class ModuleTauTau(ModuleTauPair):
     self.out.tau2_IP1[0] = tau2.IPy
     self.out.tau2_IP2[0] = tau2.IPz
 
-    self.out.phiCP[0]              = phi_cp
-    self.out.genPhiCP[0]           = phi_cp_true
+    for i, tau in enumerate(tau1_products_list):
+      getattr(self.out, f"tau1_prod{i}_pt")[0]    = tau['pt']
+      getattr(self.out, f"tau1_prod{i}_eta")[0]   = tau['eta']
+      getattr(self.out, f"tau1_prod{i}_phi")[0]   = tau['phi']
+      getattr(self.out, f"tau1_prod{i}_pdgId")[0] = tau['pdgId']
+
+    for i, tau in enumerate(tau2_products_list):
+        getattr(self.out, f"tau2_prod{i}_pt")[0]    = tau['pt']
+        getattr(self.out, f"tau2_prod{i}_eta")[0]   = tau['eta']
+        getattr(self.out, f"tau2_prod{i}_phi")[0]   = tau['phi']
+        getattr(self.out, f"tau2_prod{i}_pdgId")[0] = tau['pdgId']
+
+    if self.ismc:
+      for i, tau in enumerate(gen_tau1_products):
+        getattr(self.out, f"gentau1_prod{i}_pt")[0]    = tau['pt']
+        getattr(self.out, f"gentau1_prod{i}_eta")[0]   = tau['eta']
+        getattr(self.out, f"gentau1_prod{i}_phi")[0]   = tau['phi']
+        getattr(self.out, f"gentau1_prod{i}_pdgId")[0] = tau['pdgId']
+
+      for i, tau in enumerate(gen_tau2_products):
+          getattr(self.out, f"gentau2_prod{i}_pt")[0]    = tau['pt']
+          getattr(self.out, f"gentau2_prod{i}_eta")[0]   = tau['eta']
+          getattr(self.out, f"gentau2_prod{i}_phi")[0]   = tau['phi']
+          getattr(self.out, f"gentau2_prod{i}_pdgId")[0] = tau['pdgId']
+      
+      if genTau1 != None:
+        self.out.gentau1_pt[0] = genTau1.pt
+        self.out.gentau1_eta[0] = genTau1.eta
+        self.out.gentau1_phi[0] = genTau1.phi
+      if genTau2 != None: 
+        self.out.gentau2_pt[0] = genTau2.pt
+        self.out.gentau2_eta[0] = genTau2.eta
+        self.out.gentau2_phi[0] = genTau2.phi
+
+    if self.ismc:
+      self.out.genPhiCP[0]           = phi_cp_true
+    self.out.phiCP[0]               = phi_cp
     
-    self.out.tauspinner_weight_even[0] = event.TauSpinner_weight_cp_0
-    self.out.tauspinner_weight_odd[0]  = event.TauSpinner_weight_cp_0p5
-    self.out.tauspinner_weight_mix[0]  = event.TauSpinner_weight_cp_0p25
+    if self.ismc:
+      self.out.tauspinner_weight_even[0] = event.TauSpinner_weight_cp_0
+      self.out.tauspinner_weight_odd[0]  = event.TauSpinner_weight_cp_0p5
+      self.out.tauspinner_weight_mix[0]  = event.TauSpinner_weight_cp_0p25
+
+    ###FastMTT###
+
+    self.out.fastMTT_X1[0] = X1
+    self.out.fastMTT_X2[0] = X2
     
     self.out.fill()
     return True
