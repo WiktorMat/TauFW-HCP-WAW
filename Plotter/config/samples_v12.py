@@ -14,7 +14,7 @@ def getsampleset(channel,era,**kwargs):
   verbosity = LOG.getverbosity(kwargs)
   year     = getyear(era) # get integer year
   fname    = kwargs.get('fname', "$PICODIR/$SAMPLE_$CHANNEL$TAG.root" ) # file name pattern of pico files
-  split    = kwargs.get('split',    ['DY'] if 'tau' in channel else [ ] ) # split samples (e.g. DY) into genmatch components
+  split    = kwargs.get('split',    ['DY', 'TT', 'ST'] if 'tau' in channel else [ ] ) # split samples (e.g. DY) into genmatch components
   join     = kwargs.get('join',     ['VV','Top', 'VVV','HTT'] if era=='2022EE' else ['VV','Top'] ) # join samples (e.g. VV, top)
   rmsfs    = ensurelist(kwargs.get('rmsf', [ ])) # remove the tau ID SF, e.g. rmsf=['idweight_2','ltfweight_2']
   addsfs   = ensurelist(kwargs.get('addsf', [ ])) # add extra weight to all samples
@@ -142,8 +142,26 @@ def getsampleset(channel,era,**kwargs):
      #   # the cross section for this exact samples is 1885.0 which is ~ 1/3 the total DY->LL cross section (expected since it only selects taus and not electrons and muons)
      #   # the filter efficiency for this sample (due to tau BRs + kinematic cuts on tau decay products) is 2.865e-02 
     if '2022EE' in era:
+      Higgs_amplify= 1
       expsamples = [ # table of MC samples to be converted to Sample objects
       # GROUP NAME                     TITLE                 XSEC      EXTRA OPTIONS
+      # CP_Signal H->tau tau
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay', "ggH CPodd UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay', "ggH MM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay', "ggH SM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','ZHToTauTau_UncorrelatedDecay_UnFiltered', "ZH UnFiltered", 0.05920*Higgs_amplify, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_UnFiltered', "ggH UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','WplusHToTauTau_UncorrelatedDecay_UnFiltered', "WplusH UnFiltered", 0.05575*Higgs_amplify, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','WminusHToTauTau_UncorrelatedDecay_UnFiltered', "WminusH UnFiltered", 0.03561*Higgs_amplify, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','VBFHToTauTau_UncorrelatedDecay_UnFiltered', "VBFH UnFiltered", 0.2558*Higgs_amplify, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', "ggH CPodd Filtered", 3.2759*Higgs_amplify, {'extraweight': 0.3848 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', "ggH MM Filtered", 3.2759*Higgs_amplify, {'extraweight':0.3848 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"]}),
+      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', "ggH SM Filtered", 3.2759*Higgs_amplify, {'extraweight':0.3847 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"]}),
+      ('HTT','ZHToTauTau_UncorrelatedDecay_Filtered', "ZH Filtered", 0.05920*Higgs_amplify, {'extraweight':0.3933 ,"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_Filtered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_Filtered', "ggH Filtered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','WplusHToTauTau_UncorrelatedDecay_Filtered', "WplusH Filtered", 0.05575*Higgs_amplify, {'extraweight':0.3743 ,"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','WminusHToTauTau_UncorrelatedDecay_Filtered', "WminusH Filtered", 0.03561*Higgs_amplify, {'extraweight':0.3944 ,"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','VBFHToTauTau_UncorrelatedDecay_Filtered', "VBFH Filtered", 0.2558*Higgs_amplify, {'extraweight':0.4091 ,"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_Filtered"]}),
       # DY LO samples
       ('DY', "DYto2L_M_50_madgraphMLM", "Drell-Yan 50", 5455.0 * kfactor_dy, { 'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_madgraphMLM"]}),
       ('DY', "DYto2L_M_50_1J_madgraphMLM", "Drell-Yan 1J 50", 978.3 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_1J_madgraphMLM"]}),
@@ -191,23 +209,7 @@ def getsampleset(channel,era,**kwargs):
       ('VVV', "WWZ_4F", "WWZ 4F", 0.1851, {"nevts":nevts_json_new["WWZ_4F"]}),
       ('VVV', "WZZ", "WZZ", 0.06206, {"nevts":nevts_json_new["WZZ"]}),
       ('VVV', "ZZZ", "ZZZ", 0.01591, {"nevts":nevts_json_new["ZZZ"]}),
-      # CP_Signal H->tau tau
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay', "ggH CPodd UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay', "ggH MM UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay', "ggH SM UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','ZHToTauTau_UncorrelatedDecay_UnFiltered', "ZH UnFiltered", 0.05920, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_UnFiltered', "ggH UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','WplusHToTauTau_UncorrelatedDecay_UnFiltered', "WplusH UnFiltered", 0.05575, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','WminusHToTauTau_UncorrelatedDecay_UnFiltered', "WminusH UnFiltered", 0.03561, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','VBFHToTauTau_UncorrelatedDecay_UnFiltered', "VBFH UnFiltered", 0.2558, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', "ggH CPodd Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', "ggH MM Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', "ggH SM Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"]}),
-      ('HTT','ZHToTauTau_UncorrelatedDecay_Filtered', "ZH Filtered", 0.05920, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_Filtered', "ggH Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','WplusHToTauTau_UncorrelatedDecay_Filtered', "WplusH Filtered", 0.05575, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','WminusHToTauTau_UncorrelatedDecay_Filtered', "WminusH Filtered", 0.03561, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','VBFHToTauTau_UncorrelatedDecay_Filtered', "VBFH Filtered", 0.2558, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_Filtered"]}),
+      
       # DY NLO samples
       # ('DY', "DYto2L_M_50_amcatnloFXFX", "Drell-Yan 50 NLO", 6748.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_amcatnloFXFX"]}),
       # ('DY', "DYto2L_M_50_amcatnloFXFX_ext1", "Drell-Yan 50 NLO ext1", 6748.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_amcatnloFXFX_ext1"]}),
@@ -294,13 +296,17 @@ def getsampleset(channel,era,**kwargs):
   else:
       sampleset.stitch("DYto2L-4Jets_MLL-50*", incl='DYto2L-4Jets_MLL-50', name="DY_M50", cme=cme)  
   # JOIN
-  sampleset.join('DY', name='DY' ) # Drell-Yan, M < 50 GeV + M > 50 GeV
   if '2022EE' in era:
-    sampleset.join('VVV', 'WWW_4F', 'WWZ_4F', 'WZZ' , 'ZZZ',name='Triboson' ) # VVV
     if 'HTT' in join:
-      sampleset.join('HTT', '*UncorrelatedDecay*', name='Higgs')
-  if 'VV' in join:
-    sampleset.join('VV','WZ','WW','ZZ', name='VV' ) # Diboson
+      if Higgs_amplify==1:
+        sampleset.join('HTT', '*UncorrelatedDecay*', name='Higgs')
+      else:
+        sampleset.join('HTT', '*UncorrelatedDecay*', name=f'{Higgs_amplify} x Higgs') 
+    sampleset.join('VV','WZ','WW','ZZ','VVV','WWW_4F','WWZ_4F','WZZ','ZZZ',name='Multi-boson') # Multi-boson #     
+  else:
+    if 'VV' in join:
+      sampleset.join('VV','WZ','WW','ZZ', name='VV' ) # Diboson
+  sampleset.join('DY', name='DY' ) # Drell-Yan, M < 50 GeV + M > 50 GeV
   if 'TT' in join and era!='year':
     sampleset.join('TT', name='TT' ) # ttbar
   if 'ST' in join:

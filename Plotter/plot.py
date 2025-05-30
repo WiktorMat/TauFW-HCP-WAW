@@ -63,6 +63,7 @@ def plot(sampleset,setup,parallel=True,tag="",extratext="",outdir="plots",era=""
     loadmacro("python/macros/mapDecayModes.C") # for mapRecoDM
     dmlabels  = ["h^{#pm}","h^{#pm}h^{0}","h^{#pm}h^{#mp}h^{#pm}","h^{#pm}h^{#mp}h^{#pm}h^{0}","Other"]
     variables += [
+      Var('m_vis',          40,  0, 200, fname="mvis_logy",ctitle={'mumu':"m_mumu",'emu':"m_emu", 'mutau': "m_mutau_h"},logy=True),
       Var('m_vis',          40,  0, 200, fname="mvis",ctitle={'mumu':"m_mumu",'emu':"m_emu"},cbins={"pt_\d>":(50,0,250),"nbtag\w*>":(60,0,300)},cpos={"pt_\d>[1678]0":'LL;y=0.88'}),
       Var('m_vis',          20,  0, 200, fname="mvis_coarse",ctitle={'mumu':"m_mumu",'emu':"m_emu"},cbins={"pt_\d>":(25,0,250),"nbtag\w*>":(30,0,300)},cpos={"pt_\d>[1678]0":'LL;y=0.88'}),
       Var("m_2",            30,  0,   3, title="m_tau",veto=["njet","nbtag","dm_2==0"]),
