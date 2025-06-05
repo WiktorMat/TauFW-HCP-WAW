@@ -5,7 +5,8 @@ from matplotlib.patches import Ellipse
 import time
 from scipy.constants import physical_constants
 import os
-import Likelihood
+# import Likelihood
+from TauFW.PicoProducer.HiggsCPtools.Likelihood import Likelihood
 #from scipy.optimize import minimize
 
 ###Main reference: https://github.com/SVfit/ClassicSVfit/blob/fastMTT_2024/src/FastMTT.cc ###
@@ -28,7 +29,7 @@ def pT(aP4):
 
 class FastMTT:
     def __init__(self, calculate_uncertainties = False):
-        self.myLikelihood = Likelihood.Likelihood()
+        self.myLikelihood = Likelihood()
         self.BestLikelihood = 0.0
         self.BestX = np.array([0.0, 0.0])
         self.bestP4 = 0.0

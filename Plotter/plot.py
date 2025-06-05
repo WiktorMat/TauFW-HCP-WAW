@@ -14,7 +14,6 @@ from TauFW.Plotter.plot.string import filtervars
 from TauFW.Plotter.plot.utils import LOG as PLOG
 import yaml
 
-
 def plot(sampleset,setup,parallel=True,tag="",extratext="",outdir="plots",era="",
          varfilter=None,selfilter=None,fraction=False,pdf=False):
   """Test plotting of SampleSet class for data/MC comparison."""
@@ -63,7 +62,16 @@ def plot(sampleset,setup,parallel=True,tag="",extratext="",outdir="plots",era=""
     loadmacro("python/macros/mapDecayModes.C") # for mapRecoDM
     dmlabels  = ["h^{#pm}","h^{#pm}h^{0}","h^{#pm}h^{#mp}h^{#pm}","h^{#pm}h^{#mp}h^{#pm}h^{0}","Other"]
     variables += [
-      Var('m_vis',          40,  0, 200, fname="mvis_logy",ctitle={'mumu':"m_mumu",'emu':"m_emu", 'mutau': "m_mutau_h"},logy=True),
+      Var('m_vis',          50,  50, 140, fname="mvis_logy",ctitle={'mumu':"m_mumu",'emu':"m_emu", 'mutau': "m_mutau_h"},logy=True),
+      Var('m_vis',  1, 60,  120, fname="$VAR_1bin_logy",logy=True ),
+      Var('m_vis',  1, 60,  120, fname="$VAR_1bin" ),
+      Var('mtt',  50, 70,  170, fname="$VAR_fastMTT" ),
+      Var('tau1_IP0', 50, -0.5, 0.5, fname="$VAR"),
+      Var('tau2_IP0', 50, -0.5, 0.5, fname="$VAR"),
+      Var('tau1_IP1', 50, -0.5, 0.5, fname="$VAR"),
+      Var('tau2_IP1', 50, -0.5, 0.5, fname="$VAR"),
+      Var('tau1_IP2', 50, -0.5, 0.5, fname="$VAR"),
+      Var('tau2_IP2', 50, -0.5, 0.5, fname="$VAR"),
       Var('m_vis',          40,  0, 200, fname="mvis",ctitle={'mumu':"m_mumu",'emu':"m_emu"},cbins={"pt_\d>":(50,0,250),"nbtag\w*>":(60,0,300)},cpos={"pt_\d>[1678]0":'LL;y=0.88'}),
       Var('m_vis',          20,  0, 200, fname="mvis_coarse",ctitle={'mumu':"m_mumu",'emu':"m_emu"},cbins={"pt_\d>":(25,0,250),"nbtag\w*>":(30,0,300)},cpos={"pt_\d>[1678]0":'LL;y=0.88'}),
       Var("m_2",            30,  0,   3, title="m_tau",veto=["njet","nbtag","dm_2==0"]),
@@ -86,7 +94,7 @@ def plot(sampleset,setup,parallel=True,tag="",extratext="",outdir="plots",era=""
   
   # PLOT
   outdir = ensuredir(repkey(outdir,CHANNEL=channel,ERA=era))
-  exts   = ['png','pdf'] if pdf else ['png'] # extensions
+  exts   = ['png','pdf'] if pdf else ['png', 'root'] # extensions
   for selection in selections:
     print(">>> Selection %r: %r"%(selection.title,selection.selection))
     stacks = sampleset.getstack(variables,selection,method='QCD_OSSS',parallel=parallel)
@@ -94,8 +102,15 @@ def plot(sampleset,setup,parallel=True,tag="",extratext="",outdir="plots",era=""
     text   = "%s: %s"%(channel.replace('mu',"#mu").replace('tau',"#tau_{h}"),selection.title)
     if extratext:
       text += ("" if '\n' in extratext[:3] else ", ") + extratext
-    for stack, variable in stacks.items():
+    for stack in stacks.keys():
       #position = "" #variable.position or 'topright'
+      # Remove Higgs from stack (ratio denominator)
+      higgs_hists = [h for h in stack.exphists if any(x in h.GetName() for x in ['HTT','Higgs'])]
+      stack.exphists = [h for h in stack.exphists if not any(x in h.GetName() for x in ['HTT','Higgs'])]
+      # Add Higgs to signal overlays if not already present
+      for h in higgs_hists:
+        if h not in stack.sighists:
+            stack.sighists.append(h)
       stack.draw(fraction=fraction)
       stack.drawlegend() #position)
       stack.drawtext(text)

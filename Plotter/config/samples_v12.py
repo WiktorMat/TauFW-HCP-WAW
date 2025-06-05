@@ -146,6 +146,7 @@ def getsampleset(channel,era,**kwargs):
       expsamples = [ # table of MC samples to be converted to Sample objects
       # GROUP NAME                     TITLE                 XSEC      EXTRA OPTIONS
       # CP_Signal H->tau tau
+      # Filter efficiencies: https://gitlab.cern.ch/dwinterb/HiggsDNA/-/blob/lr_updates/scripts/ditau/config/Run3_2022/filter_efficiencies.yaml?ref_type=heads
       # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay', "ggH CPodd UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay"]}),
       # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay', "ggH MM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay"]}),
       # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay', "ggH SM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay"]}),
@@ -313,6 +314,7 @@ def getsampleset(channel,era,**kwargs):
     sampleset.join('ST', name='ST' ) # single top
   if 'Top' in join:
     sampleset.join('TT','ST', name='Top' ) # ttbar + single top
+  # sampleset.join('Multi-boson', 'DY', 'WJ', 'Top' ,name='MC')  # MC samples test
   sampleset.printtable(merged=True, split=True)
   
   # SPLIT

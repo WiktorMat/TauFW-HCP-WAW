@@ -45,6 +45,7 @@ class TreeProducerMuTau(TreeProducerTauPair):
     self.addBranch('dz_2',                       'f')
     self.addBranch('q_2',                        'i')
     self.addBranch('dm_2',                       'i')
+    self.addBranch('dmPNet_2',                'i', title="PNet decay mode")
     self.addBranch('iso_2',                      'f', title="rawIso")
     self.addBranch('idiso_2',                    'i', title="rawIso WPs")
     #self.addBranch('rawAntiEle_2',               'f') # not available anymore in nanoAODv9
@@ -109,9 +110,9 @@ class TreeProducerMuTau(TreeProducerTauPair):
 
     
         
-    #############
-    #  HiggsCP  #
-    #############
+    #######################
+    #  HiggsCP & FastMTT  #
+    #######################
 
     self.addBranch('tau1_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
     self.addBranch('tau1_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
@@ -120,3 +121,9 @@ class TreeProducerMuTau(TreeProducerTauPair):
     self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
     self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
     self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+
+    self.addBranch('phi_CP', 'f', -1, title="HiggsCP phi_CP variable")
+
+    self.addBranch('mtt', 'f', -1, title="FastMTT mass of mu-tau system")
+    self.addBranch('pt_mtt_1', 'f', -1, title="FastMTT Pt of mu-tau system, muon leg")
+    self.addBranch('pt_mtt_2', 'f', -1, title="FastMTT Pt of mu-tau system, tau leg")
