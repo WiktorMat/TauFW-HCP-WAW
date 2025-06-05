@@ -492,6 +492,10 @@ class ModuleTauPair(Module):
     self.out.metcov00[0]               = event.PuppiMET_covXX #TO_DO
     self.out.metcov01[0]               = event.PuppiMET_covXY #TO_DO
     self.out.metcov11[0]               = event.PuppiMET_covYY #TO_DO
+    #self.out.tauProdID[0]            = event.tauProd_pdgId
+    #getchargedPion(event)
+
+    
     ###self.out.fixedGridRhoFastjetAll[0] = event.fixedGridRhoFastjetAll
     
     # PZETA

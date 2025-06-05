@@ -117,3 +117,5 @@ class TreeProducerMuTau(TreeProducerTauPair):
     self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
     self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
     self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+
+    self.addBranch('phiCP', 'f', -1, title="Measured violation of CP symmetry in H->tautau decay")
