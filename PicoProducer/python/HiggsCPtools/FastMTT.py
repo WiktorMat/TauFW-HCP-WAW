@@ -29,7 +29,7 @@ def pT(aP4):
 
 class FastMTT:
     def __init__(self, calculate_uncertainties = False):
-        self.myLikelihood = Likelihood()
+        self.myLikelihood = Likelihood() #Likelihood.Likelihood()
         self.BestLikelihood = 0.0
         self.BestX = np.array([0.0, 0.0])
         self.bestP4 = 0.0
@@ -118,8 +118,8 @@ class FastMTT:
         real_time_elapsed = end_real_time - start_real_time
         cpu_time_elapsed = end_cpu_time - start_cpu_time
 
-        print(f"Real time elapsed: {real_time_elapsed} seconds")
-        print(f"CPU time elapsed: {cpu_time_elapsed} seconds")
+        # print(f"Real time elapsed: {real_time_elapsed} seconds")
+        # print(f"CPU time elapsed: {cpu_time_elapsed} seconds")
     
     #lepton[0]: decay_type:
     #1 - TauToHad
