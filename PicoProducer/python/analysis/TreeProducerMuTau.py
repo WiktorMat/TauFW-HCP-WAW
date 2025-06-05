@@ -90,10 +90,13 @@ class TreeProducerMuTau(TreeProducerTauPair):
       self.addBranch('genvistauphi_2',      'f', -9)
       self.addBranch('gendm_2',             'i', -1)
       self.addBranch('idisoweight_1',       'f', 1., title="muon ID/iso efficiency SF")
-      self.addBranch('idweight_2',          'f', 1., title="tau ID efficiency SF, Tight")
-      self.addBranch('idweight_dm_2',       'f', 1., title="tau ID efficiency SF, Tight, DM-dependent")
-      self.addBranch('idweight_medium_2',   'f', 1., title="tau ID efficiency SF, Medium")
-      self.addBranch('ltfweight_2',         'f', 1., title="lepton -> tau fake rate SF")
+      self.addBranch('idweight_2',          'f', 1., title="tau ID efficiency SF, Tight") #genmatch=5, real tau
+      self.addBranch('idweight_dm_2',       'f', 1., title="tau ID efficiency SF, Tight, DM-dependent") #genmatch=5, real tau
+      self.addBranch('idweight_medium_2',   'f', 1., title="tau ID efficiency SF, Medium") #genmatch=5, real tau
+      self.addBranch('ltfweight_2',         'f', 1., title="lepton -> tau fake rate SF") #genmatch=1, 3 -> e or 2, 4 -> mu 
+      self.addBranch('tau_pt_preSF',      'f', title="no correction applied to tau pt")
+      self.addBranch('tes_sf',      'f', title="tau energy scale correction")
+      self.addBranch('trigweight_2',      'f', title="tau trigger efficiency SF") 
       if self.module.dosys: # systematic variation (only for nominal tree)
         self.addBranch('idweightUp_2',      'f', 1.)
         self.addBranch('idweightDown_2',    'f', 1.)
