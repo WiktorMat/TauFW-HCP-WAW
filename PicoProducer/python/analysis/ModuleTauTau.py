@@ -9,8 +9,8 @@ from TauFW.PicoProducer.analysis.utils import DiTauPair, loosestIso, idIso, matc
 from TauFW.PicoProducer.corrections.TrigObjMatcher import TrigObjMatcher
 from TauFW.PicoProducer.corrections.TauTriggerSFs import TauTriggerSFs
 from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, TauFESTool
-from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_tautau_reco import *
-from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_tautau_gen_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_gen_reco import *
 from TauFW.PicoProducer.analysis.HiggsCPtools.GenParticles import *
 from TauFW.PicoProducer.FastMTT.FastMTT import FastMTT
 from TauFW.PicoProducer.analysis.HiggsCPtools.Polarimetric import *
@@ -179,9 +179,9 @@ class ModuleTauTau(ModuleTauPair):
       gen_tau1_products = dump_tau_products(genTau1_daughters, number_of_products=5)
       gen_tau2_products = dump_tau_products(genTau2_daughters, number_of_products=5)
     
-    phi_cp = PhiCP_tautau_reco(tau1, tau2, tau_products1, tau_products2)
+    phi_cp = PhiCP_reco(tau1, tau2, tau_products1, tau_products2)
     if self.ismc:
-      phi_cp_true = PhiCP_tautau_genReco(tau1, tau2, genParticles, genVisTau)
+      phi_cp_true = PhiCP_genReco(tau1, tau2, genParticles, genVisTau)
 
     '''
     ### FOR TESTS IN TAU -> RHO^pm DECAY ###

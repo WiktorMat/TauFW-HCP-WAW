@@ -129,7 +129,7 @@ class TreeProducerTauTau(TreeProducerTauPair):
       self.addBranch(f"tau2_prod{i}_phi",   'f', -1, title=f"Phi of tau2 product {i}")
       self.addBranch(f"tau2_prod{i}_pdgId", 'i', -1, title=f"PDG ID of tau2 product {i}")
 
-    for i in range(7):
+    for i in range(5):
       self.addBranch(f"gentau1_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau1 product {i}")
       self.addBranch(f"gentau1_prod{i}_eta",   'f', -1, title=f"Eta of generated tau1 product {i}")
       self.addBranch(f"gentau1_prod{i}_phi",   'f', -1, title=f"Phi of generated tau1 product {i}")

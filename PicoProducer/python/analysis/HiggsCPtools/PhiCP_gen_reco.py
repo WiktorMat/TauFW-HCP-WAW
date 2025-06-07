@@ -10,13 +10,17 @@ warnings.filterwarnings("ignore", category=UserWarning)
 import ROOT
 import math
 
-def get_genPions(tau1, tau2, genParticles, genVisTau):
-    genTau1, genTau1_daughters = find_true_tau(tau1, genParticles, genVisTau)
+def get_genPions(tau1, tau2, genParticles, genVisTau, channel = "tautau"):
+    if channel is 'tautau':
+        genTau1, genTau1_daughters = find_true_tau(tau1, genParticles, genVisTau)
+    elif channel is 'mutau':
+        genTau1, genTau1_daughters = find_true_muon(tau1, genParticles)
     genTau2, genTau2_daughters = find_true_tau(tau2, genParticles, genVisTau)
 
     charged_pions1 = []
     neutral_pions1 = []
     neutrinos1 = []
+    muons1 = []
     for daugther in genTau1_daughters:
         if abs(daugther.pdgId) == 211:
             charged_pions1.append(daugther)
@@ -24,10 +28,13 @@ def get_genPions(tau1, tau2, genParticles, genVisTau):
             neutral_pions1.append(daugther)
         elif abs(daugther.pdgId) == 12 or abs(daugther.pdgId) == 14 or abs(daugther.pdgId) == 16:
             neutrinos1.append(daugther)
+        elif abs(daugther.pdgId) == 13:
+            muons1.append(daugther)
     
     charged_pions2 = []
     neutral_pions2 = []
     neutrinos2 = []
+    muons2 = []
     for daugther in genTau2_daughters:
         if abs(daugther.pdgId) == 211:
             charged_pions2.append(daugther)
@@ -35,6 +42,8 @@ def get_genPions(tau1, tau2, genParticles, genVisTau):
             neutral_pions2.append(daugther)
         elif abs(daugther.pdgId) == 12 or abs(daugther.pdgId) == 14 or abs(daugther.pdgId) == 16:
             neutrinos2.append(daugther)
+        elif abs(daugther.pdgId) == 13:
+            muons2.append(daugther)
 
     if genTau1 is None or genTau2 is None:
         print("No gen-level match for this tau.")
@@ -46,11 +55,18 @@ def get_genPions(tau1, tau2, genParticles, genVisTau):
         print("Both taus are negative or positive.")
         return None, None, None, None
     
-    return charged_pions1, neutral_pions1, charged_pions2, neutral_pions2
+    if channel == "tautau":
+        return charged_pions1, neutral_pions1, charged_pions2, neutral_pions2
+    elif channel == "mutau":
+        return muons1, [], charged_pions2, neutral_pions2
+    #In mutau channel we return empty second list
+    #So that in the p1, lambda1 reconstruction the code chooses the algorithm to have len(charged) == 1 and len(neutral) == 0
+    #Then it will automatically use the IP method
+    #It's very bad practice in the sense of the good programming, so I will fix it with the general inventory I plan
 
-def PhiCP_tautau_genReco(tau1, tau2, genParticles, genVisTau):
+def PhiCP_genReco(tau1, tau2, genParticles, genVisTau, channel = "tautau"):
 
-    charged1, neutral1, charged2, neutral2 = get_genPions(tau1, tau2, genParticles, genVisTau)
+    charged1, neutral1, charged2, neutral2 = get_genPions(tau1, tau2, genParticles, genVisTau, channel)
 
     if charged1 is None or neutral1 is None or charged2 is None or neutral2 is None:
         return -1

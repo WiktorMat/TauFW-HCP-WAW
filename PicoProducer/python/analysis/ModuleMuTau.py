@@ -6,6 +6,14 @@ from TauFW.PicoProducer.analysis.TreeProducerMuTau import *
 from TauFW.PicoProducer.analysis.ModuleTauPair import *
 from TauFW.PicoProducer.analysis.utils import LeptonTauPair, loosestIso, idIso, matchgenvistau, matchtaujet, filtermutau
 from TauFW.PicoProducer.corrections.MuonSFs import *
+
+
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_gen_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.GenParticles import *
+from TauFW.PicoProducer.FastMTT.FastMTT import FastMTT
+from TauFW.PicoProducer.analysis.HiggsCPtools.Polarimetric import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.Data_Dump import *
 #from TauFW.PicoProducer.corrections.TrigObjMatcher import loadTriggerDataFromJSON, TrigObjMatcher
 #from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, campaigns # old way, corrections from root files
 
@@ -168,16 +176,6 @@ class ModuleMuTau(ModuleTauPair):
       return False
     self.out.cutflow.fill('tau')
 
-    ### CP ACOPLANARITY ANGLE ###
-    print("PDG ID\n")
-    print(tau.decayMode)
-
-    tau_products = []
-    for product in Collection(event,'TauProd'):
-      tau_products.append(product)
-
-    phi_cp = PhiCP_mutau(muon, tau, tau_products)
-    print("Phi CP: ", phi_cp)
       #print(tauProd.pdgId)
       #if tauProd.pdgId == 211:
       #  charged_pions.append(tauProd)
@@ -221,10 +219,55 @@ class ModuleMuTau(ModuleTauPair):
         return False
       ###if self.jtf!=1 and tau.genPartFlav!=0:
       ###  return False
+
+    ### FastMTT ###
+
+    measuredTauLeptons = np.array([[[3, muon.pt, muon.eta, muon.phi, muon.mass, -1], [1, tau.pt, tau.eta, tau.phi, tau.mass, tau.decayMode]]])
+    METx = np.array([event.PFMET_pt * np.cos(event.PFMET_phi)])
+    METy = np.array([event.PFMET_pt * np.sin(event.PFMET_phi)])
+    covMET = np.array([[[event.PFMET_covXX, event.PFMET_covXY], [event.PFMET_covXY, event.PFMET_covYY]]])
+
+    fMTT = FastMTT()
+    fMTT.TimeReport = False
+    fMTT.myLikelihood.setWindow = [123, 127]
+    fMTT.myLikelihood.enableLikelihoodComponents(window = True)
+    fMTT.run(measuredTauLeptons, METx, METy, covMET)
+
+    mFast = fMTT.mass[0]
+    fMTT_tau1P4 = fMTT.tau1P4[0]
+    fMTT_tau2P4 = fMTT.tau2P4[0]
+    X1 = fMTT.BestX[0, 0]
+    X2 = fMTT.BestX[0, 1]
+
+    ### CP ACOPLANARITY ANGLE ###
+
+    tau_products = []
+    for product in Collection(event,'TauProd'):
+      tau_products.append(product)
+
+    tau_products_list = dump_tau_products(tau_products, number_of_products=5)
+
+    if self.ismc:
+      genParticles = []
+      for genParticle in Collection(event,'GenPart'):
+        genParticles.append(genParticle)
+
+      genVisTau = []
+      for genParticle in Collection(event,'GenVisTau'):
+        genVisTau.append(genParticle)
+      
+      genTau, genTau_daughters = find_true_tau(tau, genParticles, genVisTau)
+      gen_tau_products = dump_tau_products(genTau_daughters, number_of_products=5)
+
+      genMuonTau, genMuonTau_daughters = find_true_muon(muon, genParticles)
+      gen_muon_products = dump_tau_products(genMuonTau_daughters, number_of_products=3)
+    
+    phi_cp = PhiCP_reco(muon, tau, tau2Prod = tau_products, channel1 = 'mu')
+    if self.ismc:
+      phi_cp_true = PhiCP_genReco(muon, tau, genParticles, genVisTau, channel = 'mutau')
     
     # EVENT
     self.fillEventBranches(event)
-    
     
     # MUON
     self.out.pt_1[0]                       = muon.pt
@@ -240,18 +283,6 @@ class ModuleMuTau(ModuleTauPair):
     self.out.idMedium_1[0]                 = muon.mediumId
     self.out.idTight_1[0]                  = muon.tightId
     self.out.idHighPt_1[0]                 = muon.highPtId
-
-    
-    # HIGGS CP
-    self.out.tau1_IP0[0] = muon.IPx
-    self.out.tau1_IP1[0] = muon.IPy
-    self.out.tau1_IP2[0] = muon.IPz
-
-    self.out.tau2_IP0[0] = tau.IPx
-    self.out.tau2_IP1[0] = tau.IPy
-    self.out.tau2_IP2[0] = tau.IPz
-
-    self.out.phiCP[0]              = phi_cp
     
     # TAU
     self.out.pt_2[0]                       = tau.pt
@@ -356,7 +387,7 @@ class ModuleMuTau(ModuleTauPair):
           if self.dosys:
             self.out.ltfweightUp_2[0] = self.deepTauSFTool.sf_vsmu(tau.eta, tau.genPartFlav, self.wp_vsmu, "up")
             self.out.ltfweightDown_2[0] = self.deepTauSFTool.sf_vsmu(tau.eta, tau.genPartFlav, self.wp_vsmu, "down")
-      print(">>> %s: %s %s %s %s %s %s %s %s %s"%(self.era, tau.pt, tau.eta, tau.decayMode, tau.genPartFlav, self.out.idweight_2[0], self.out.idweight_dm_2[0], self.out.ltfweight_2[0], self.out.trigweight_2[0], self.out.idweight_medium_2[0]))
+      #print(">>> %s: %s %s %s %s %s %s %s %s %s"%(self.era, tau.pt, tau.eta, tau.decayMode, tau.genPartFlav, self.out.idweight_2[0], self.out.idweight_dm_2[0], self.out.ltfweight_2[0], self.out.trigweight_2[0], self.out.idweight_medium_2[0]))
 ## basic idea, for testing ##
 # from correctionlib import _core
 # fname = "/cvmfs/cms.cern.ch/rsync/cms-nanoAOD/jsonpog-integration/POG/TAU/2022_Summer22EE/tau_DeepTau2018v2p5_2022_postEE.json.gz"
@@ -416,6 +447,61 @@ class ModuleMuTau(ModuleTauPair):
     
     # MET & DILEPTON VARIABLES
     self.fillMETAndDiLeptonBranches(event,muon,tau,met,met_vars)
+
+    
+    
+    # HIGGS CP
+    self.out.mu_IP0[0] = muon.IPx
+    self.out.mu_IP1[0] = muon.IPy
+    self.out.mu_IP2[0] = muon.IPz
+
+    self.out.tau_IP0[0] = tau.IPx
+    self.out.tau_IP1[0] = tau.IPy
+    self.out.tau_IP2[0] = tau.IPz
+
+    self.out.phiCP[0]              = phi_cp
+
+    for i, tau in enumerate(tau_products_list):
+      getattr(self.out, f"tau_prod{i}_pt")[0]    = tau['pt']
+      getattr(self.out, f"tau_prod{i}_eta")[0]   = tau['eta']
+      getattr(self.out, f"tau_prod{i}_phi")[0]   = tau['phi']
+      getattr(self.out, f"tau_prod{i}_pdgId")[0] = tau['pdgId']
+
+    if self.ismc:
+      for i, tau in enumerate(gen_tau_products):
+        getattr(self.out, f"gentau_prod{i}_pt")[0]    = tau['pt']
+        getattr(self.out, f"gentau_prod{i}_eta")[0]   = tau['eta']
+        getattr(self.out, f"gentau_prod{i}_phi")[0]   = tau['phi']
+        getattr(self.out, f"gentau_prod{i}_pdgId")[0] = tau['pdgId']
+
+      for i, tau in enumerate(gen_muon_products):
+          getattr(self.out, f"genmutau_prod{i}_pt")[0]    = tau['pt']
+          getattr(self.out, f"genmutau_prod{i}_eta")[0]   = tau['eta']
+          getattr(self.out, f"genmutau_prod{i}_phi")[0]   = tau['phi']
+          getattr(self.out, f"genmutau_prod{i}_pdgId")[0] = tau['pdgId']
+      
+      if genTau != None:
+        self.out.gentau_pt[0] = genTau.pt
+        self.out.gentau_eta[0] = genTau.eta
+        self.out.gentau_phi[0] = genTau.phi
+      if genMuonTau != None: 
+        self.out.genmutau_pt[0] = genMuonTau.pt
+        self.out.genmutau_eta[0] = genMuonTau.eta
+        self.out.genmutau_phi[0] = genMuonTau.phi
+
+    if self.ismc:
+      self.out.genphiCP[0]           = phi_cp_true
+    self.out.phiCP[0]               = phi_cp
+    
+    if self.ismc:
+      self.out.tauspinner_weight_even[0] = event.TauSpinner_weight_cp_0
+      self.out.tauspinner_weight_odd[0]  = event.TauSpinner_weight_cp_0p5
+      self.out.tauspinner_weight_mix[0]  = event.TauSpinner_weight_cp_0p25
+
+    ###FastMTT###
+
+    self.out.fastMTT_X1[0] = X1
+    self.out.fastMTT_X2[0] = X2
     
     
     self.out.fill()
