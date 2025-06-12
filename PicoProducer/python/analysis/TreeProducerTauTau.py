@@ -26,6 +26,7 @@ class TreeProducerTauTau(TreeProducerTauPair):
     self.addBranch('dz_1',                       'f')
     self.addBranch('q_1',                        'i')
     self.addBranch('dm_1',                       'i')
+    self.addBranch('dm_PNet_1',                       'i')
     self.addBranch('iso_1',                      'f', title="rawIso")
     self.addBranch('idiso_1',                    'i', title="rawIso WPs")
     self.addBranch('rawDeepTau2017v2p1VSe_1',    'f')
@@ -61,6 +62,7 @@ class TreeProducerTauTau(TreeProducerTauPair):
     self.addBranch('dz_2',                       'f')
     self.addBranch('q_2',                        'i')
     self.addBranch('dm_2',                       'i')
+    self.addBranch('dm_PNet_2',                       'i')
     self.addBranch('iso_2',                      'f', title="rawIso")
     self.addBranch('idiso_2',                    'i', title="rawIso WPs")
     self.addBranch('rawDeepTau2017v2p1VSe_2',    'f')
@@ -112,3 +114,57 @@ class TreeProducerTauTau(TreeProducerTauPair):
         self.addBranch('ltfweightDown_1',        'f', 1.)
         self.addBranch('ltfweightDown_2',        'f', 1.)
     
+    #############
+    #  HiggsCP  #
+    #############
+
+    for i in range(5):
+      self.addBranch(f"tau1_prod{i}_pt",    'f', -1, title=f"Transverse momentum of tau1 product {i}")
+      self.addBranch(f"tau1_prod{i}_eta",   'f', -1, title=f"Eta of tau1 product {i}")
+      self.addBranch(f"tau1_prod{i}_phi",   'f', -1, title=f"Phi of tau1 product {i}")
+      self.addBranch(f"tau1_prod{i}_pdgId", 'i', -1, title=f"PDG ID of tau1 product {i}")
+
+      self.addBranch(f"tau2_prod{i}_pt",    'f', -1, title=f"Transverse momentum of tau2 product {i}")
+      self.addBranch(f"tau2_prod{i}_eta",   'f', -1, title=f"Eta of tau2 product {i}")
+      self.addBranch(f"tau2_prod{i}_phi",   'f', -1, title=f"Phi of tau2 product {i}")
+      self.addBranch(f"tau2_prod{i}_pdgId", 'i', -1, title=f"PDG ID of tau2 product {i}")
+
+    for i in range(7):
+      self.addBranch(f"gentau1_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau1 product {i}")
+      self.addBranch(f"gentau1_prod{i}_eta",   'f', -1, title=f"Eta of generated tau1 product {i}")
+      self.addBranch(f"gentau1_prod{i}_phi",   'f', -1, title=f"Phi of generated tau1 product {i}")
+      self.addBranch(f"gentau1_prod{i}_pdgId", 'i', -1, title=f"PDG ID of generated tau1 product {i}")
+
+      self.addBranch(f"gentau2_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau2 product {i}")
+      self.addBranch(f"gentau2_prod{i}_eta",   'f', -1, title=f"Eta of generated tau2 product {i}")
+      self.addBranch(f"gentau2_prod{i}_phi",   'f', -1, title=f"Phi of generated tau2 product {i}")
+      self.addBranch(f"gentau2_prod{i}_pdgId", 'i', -1, title=f"PDG ID of generated tau2 product {i}")
+
+    self.addBranch('gentau1_pt',    'f', -1, title="pt of generated tau1")
+    self.addBranch('gentau1_eta',   'f', -1, title="eta of generated tau1")
+    self.addBranch('gentau1_phi',   'f', -1, title="phi of generated tau1")
+    self.addBranch('gentau2_pt',  'f', -1, title="pt of generated tau2")
+    self.addBranch('gentau2_eta', 'f', -1, title="eta of generated tau2")
+    self.addBranch('gentau2_phi', 'f', -1, title="phi of generated tau2")
+
+    self.addBranch('tau1_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
+    self.addBranch('tau1_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
+    self.addBranch('tau1_IP2', 'f', -1, title="Impact parameter of first tau, z-axis")
+    
+    self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
+    self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
+    self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+
+    self.addBranch('phiCP', 'f', -1, title="Measured/reconstructed acoplanarity angle (sensitive to CP violation) in H->tautau decay. Result should be reweighed with tau spinner weights.")
+    self.addBranch('genPhiCP', 'f', -1, title="Acoplanarity angle (sensitive to CP violation) in H->tautau decay, reconstructed from gen-level information. Result should be reweighed with tau spinner weights.")
+
+    self.addBranch('tauspinner_weight_even', 'f', -1, title="Tau spinner weight for CP even hypothesis")
+    self.addBranch('tauspinner_weight_odd', 'f', -1, title="Tau spinner weight for CP odd hypothesis")
+    self.addBranch('tauspinner_weight_mix', 'f', -1, title="Tau spinner weight for mixed CP hypothesis")
+
+    #############
+    #  FastMTT  #
+    #############
+
+    self.addBranch('fastMTT_X1', 'f', -1, title="Fraction of first tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")
+    self.addBranch('fastMTT_X2', 'f', -1, title="Fraction of second tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")
