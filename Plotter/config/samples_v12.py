@@ -164,14 +164,19 @@ def getsampleset(channel,era,**kwargs):
       ('HTT','WminusHToTauTau_UncorrelatedDecay_Filtered', "WminusH Filtered", 0.03561*Higgs_amplify, {'extraweight':0.3944 ,"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_Filtered"]}),
       ('HTT','VBFHToTauTau_UncorrelatedDecay_Filtered', "VBFH Filtered", 0.2558*Higgs_amplify, {'extraweight':0.4091 ,"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_Filtered"]}),
       # DY LO samples
-      ('DY', "DYto2L_M_50_madgraphMLM", "Drell-Yan 50", 5455.0 * kfactor_dy, { 'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_1J_madgraphMLM", "Drell-Yan 1J 50", 978.3 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_1J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_2J_madgraphMLM", "Drell-Yan 2J 50", 315.1 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_2J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_3J_madgraphMLM", "Drell-Yan 3J 50", 93.7 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_3J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_4J_madgraphMLM", "Drell-Yan 4J 50", 45.4 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_4J_madgraphMLM"]}),
+      ( 'DY', "DYto2Mu_MLL_10to50_powheg",   "Drell-Yan 10 to 50",       6744*1.0, {'extraweight': dyweight, 'nevts': 1418050, 'sumw':1301142} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_50to120_powheg",  "Drell-Yan 50 to 120",      2219*kfactor_dy, {'extraweight': dyweight, 'nevts': 2820937, 'sumw':2763691.0} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_120to200_powheg", "Drell-Yan 120 to 200",     21.65*kfactor_dy, {'extraweight': dyweight, 'nevts': 1453748, 'sumw':1438952.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_200to400_powheg", "Drell-Yan 200 to 400",     3.058*kfactor_dy, {'extraweight': dyweight, 'nevts': 853443, 'sumw':849855.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_400to800_powheg", "Drell-Yan 400 to 800",     0.2691*kfactor_dy, {'extraweight': dyweight, 'nevts': 874240, 'sumw':873292.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_800to1500_powheg", "Drell-Yan 800 to 1500",   0.01915*kfactor_dy, {'extraweight': dyweight, 'nevts': 579560, 'sumw': 579456.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_1500to2500_powheg", "Drell-Yan 1500 to 2500", 0.001111*kfactor_dy, {'extraweight': dyweight,'nevts': 590523, 'sumw':590493.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_2500to4000_powheg", "Drell-Yan 2500 to 4000", 0.00005949*kfactor_dy, {'extraweight': dyweight,'nevts': 299278, 'sumw':299274.0} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_4000to6000_powheg", "Drell-Yan 4000 to 6000", 0.000001558*kfactor_dy, {'extraweight': dyweight, 'nevts': 289200, 'sumw':289198.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_6000_powheg",      "Drell-Yan 6000",           3.519e-8*kfactor_dy, {'extraweight': dyweight ,'nevts': 145002, 'sumw':145002.0}  ), # LO times kfactor
       # DY 10-50 samples
       # ('DY', "DYto2L_M_10to50_amcatnloFXFX", "Drell-Yan 10-50 NLO", 20950.0, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_10to50_amcatnloFXFX"]}),
-      ('DY', "DYto2L_M_10to50_madgraphMLM", "Drell-Yan 10-50", 17380.0, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_10to50_madgraphMLM"]}),
+
       # W + Jets LO samples
       ('WJ', "WtoLNu_madgraphMLM", "W + jets", 55300.0 * kfactor_wj, {"nevts":nevts_json_new["WtoLNu_madgraphMLM"]}),
       ('WJ', "WtoLNu_1J_madgraphMLM", "W + 1J", 9128.0 * kfactor_wj, {"nevts":nevts_json_new["WtoLNu_1J_madgraphMLM"]}),
@@ -292,7 +297,6 @@ def getsampleset(channel,era,**kwargs):
       sampleset.stitch("W*LNu*Jets*",    incl='WJetsToLNu-4Jets',  name='WJ', cme=cme) # W + jets
   if '2022EE' in era:
     sampleset.stitch("W*LNu*",    incl='WtoLNu_madgraphMLM',  name='WJ', cme=cme) # W + jets
-    sampleset.stitch("DYto2L*", incl='DYto2L_M_50_madgraphMLM', name="DY", cme=cme)
     #sampleset.stitch("DYto2L*amcatnloFXFX*", incl='DYto2L_M_50_amcatnloFXFX_ext1', name="DY", cme=cme) # Drell-Yan NLO
   else:
       sampleset.stitch("DYto2L-4Jets_MLL-50*", incl='DYto2L-4Jets_MLL-50', name="DY_M50", cme=cme)  
