@@ -114,16 +114,56 @@ class TreeProducerMuTau(TreeProducerTauPair):
     #  HiggsCP & FastMTT  #
     #######################
 
-    self.addBranch('tau1_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
-    self.addBranch('tau1_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
-    self.addBranch('tau1_IP2', 'f', -1, title="Impact parameter of first tau, z-axis")
-    
-    self.addBranch('tau2_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
-    self.addBranch('tau2_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
-    self.addBranch('tau2_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+    for i in range(5):
+      self.addBranch(f"tau_prod{i}_pt",    'f', -1, title=f"Transverse momentum of tau product {i}")
+      self.addBranch(f"tau_prod{i}_eta",   'f', -1, title=f"Eta of tau product {i}")
+      self.addBranch(f"tau_prod{i}_phi",   'f', -1, title=f"Phi of tau product {i}")
+      self.addBranch(f"tau_prod{i}_pdgId", 'i', -1, title=f"PDG ID of tau product {i}")
 
-    self.addBranch('phi_CP', 'f', -1, title="HiggsCP phi_CP variable")
+    for i in range(3):
+      self.addBranch(f"tau2_prod{i}_pt",    'f', -1, title=f"Transverse momentum of tau2 product {i}")
+    for i in range(5):
+      self.addBranch(f"gentau_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau product {i}")
+      self.addBranch(f"gentau_prod{i}_eta",   'f', -1, title=f"Eta of generated tau product {i}")
+      self.addBranch(f"gentau_prod{i}_phi",   'f', -1, title=f"Phi of generated tau product {i}")
+      self.addBranch(f"gentau_prod{i}_pdgId", 'i', -1, title=f"PDG ID of generated tau product {i}")
+
+    for i in range(3):
+
+      self.addBranch(f"genmutau_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau product {i} in muonic tau decay channel")
+      self.addBranch(f"genmutau_prod{i}_eta",   'f', -1, title=f"Eta of generated tau product {i} in muonic tau decay channel")
+      self.addBranch(f"genmutau_prod{i}_phi",   'f', -1, title=f"Phi of generated tau product {i} in muonic tau decay channel")
+      self.addBranch(f"genmutau_prod{i}_pdgId", 'i', -1, title=f"PDG ID of generated tau product {i} in muonic tau decay channel")
+
+    self.addBranch('gentau_pt',    'f', -1, title="pt of generated hadronic tau")
+    self.addBranch('gentau_eta',   'f', -1, title="eta of generated hadronic tau")
+    self.addBranch('gentau_phi',   'f', -1, title="phi of generated hadronic tau")
+    self.addBranch('genmutau_pt',  'f', -1, title="pt of generated muonic tau")
+    self.addBranch('genmutau_eta', 'f', -1, title="eta of generated muonic tau")
+    self.addBranch('genmutau_phi', 'f', -1, title="phi of generated muonic tau")
+
+    self.addBranch('mu_IP0', 'f', -1, title="Impact parameter of first tau, x-axis")
+    self.addBranch('mu_IP1', 'f', -1, title="Impact parameter of first tau, y-axis")
+    self.addBranch('mu_IP2', 'f', -1, title="Impact parameter of first tau, z-axis")
+    
+    self.addBranch('tau_IP0', 'f', -1, title="Impact parameter of second tau, x-axis")
+    self.addBranch('tau_IP1', 'f', -1, title="Impact parameter of second tau, y-axis")
+    self.addBranch('tau_IP2', 'f', -1, title="Impact parameter of second tau, z-axis")
+
+    self.addBranch('phiCP', 'f', -1, title="Measured violation of CP symmetry in H->tautau decay")
+    self.addBranch('genphiCP', 'f', -1, title="Acoplanarity angle (sensitive to CP violation) in H->tautau decay, reconstructed from gen-level information. Result should be reweighed with tau spinner weights")
+
+    self.addBranch('tauspinner_weight_even', 'f', -1, title="Tau spinner weight for CP even hypothesis")
+    self.addBranch('tauspinner_weight_odd', 'f', -1, title="Tau spinner weight for CP odd hypothesis")
+    self.addBranch('tauspinner_weight_mix', 'f', -1, title="Tau spinner weight for mixed CP hypothesis")
+
+    #############
+    #  FastMTT  #
+    #############
 
     self.addBranch('mtt', 'f', -1, title="FastMTT mass of mu-tau system")
     self.addBranch('pt_mtt_1', 'f', -1, title="FastMTT Pt of mu-tau system, muon leg")
     self.addBranch('pt_mtt_2', 'f', -1, title="FastMTT Pt of mu-tau system, tau leg")
+
+    self.addBranch('fastMTT_X1', 'f', -1, title="Fraction of first tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")
+    self.addBranch('fastMTT_X2', 'f', -1, title="Fraction of second tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")
