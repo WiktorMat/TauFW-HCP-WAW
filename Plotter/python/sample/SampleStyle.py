@@ -75,6 +75,7 @@ sample_colors = {
   'WTau':      416,
   'WJ':        50,
   'QCD':       kMagenta-10,
+  'Higgs':    kMagenta+2, #kGreen+3,
   'Data':      kBlack,
 }
 
@@ -82,6 +83,7 @@ sample_colors = {
 def set_sample_colors(coldict):
   global sample_colors
   sample_colors = OrderedDict([ # order matters: first match to key is used
+    ('Higgs',           coldict['Higgs']),
     ('ZTT_DM11',         coldict['ZTT_DM11']),
     ('ZTT_DM10',         coldict['ZTT_DM10']),
     ('ZTT_DM1',          coldict['ZTT_DM1']),
@@ -120,6 +122,7 @@ def set_sample_colors(coldict):
     ('VVJ',              coldict['VVJ']),
     ('VV',               coldict['VV']),
     ('Diboson',          coldict['VV']),
+    ('Multi-boson',          coldict['VV']),
     ('Electroweak',      coldict['WJ']),
     ('STT',              coldict['ST']),
     ('STJ',              coldict['STJ']),

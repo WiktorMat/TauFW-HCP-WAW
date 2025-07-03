@@ -16,14 +16,24 @@ from TauFW.PicoProducer.FastMTT.FastMTT import FastMTT
 from TauFW.PicoProducer.analysis.HiggsCPtools.Polarimetric import *
 from TauFW.PicoProducer.analysis.HiggsCPtools.Data_Dump import *
 
+# sys.path.append('~/CMSSW_14_1_0_pre4/src')
+from TauFW.PicoProducer.corrections.DeepTau2018v2p5SFTool import DeepTau2018v2p5SFTool # NEW Tool for tau SFs and TES from correctionlib
 
+wp_vsjet, wp_vse, wp_vsmu, syst = "Medium", "VVLoose", "Tight", "nom"
 class ModuleTauTau(ModuleTauPair):
   
   def __init__(self, fname, **kwargs):
     kwargs['channel'] = 'mutau'
     super(ModuleTauTau,self).__init__(fname,**kwargs)
     self.out = TreeProducerTauTau(fname,self)
+    self.deepTauSFTool = DeepTau2018v2p5SFTool(self.era) #NEW
     
+    # TODO: remove hardcoded values and make wps configurable
+    self.wp_vsjet = "Medium"
+    self.wp_vse   = "VVLoose"
+    self.wp_vsmu  = "Tight"
+    self.syst     = "nom"
+
     # TRIGGERS
     jsonfile       = os.path.join(datadir,"trigger/tau_triggers_%d.json"%(self.year))
     #self.trigger   = TrigObjMatcher(jsonfile,trigger='ditau',isdata=self.isdata) #TO_DO
@@ -88,26 +98,33 @@ class ModuleTauTau(ModuleTauPair):
       if tau.idDeepTau2017v2p1VSmu<1: continue  # VLoose
       if tau.idDeepTau2017v2p1VSjet<self.tauwp: continue
       if self.ismc:
+        self.out.tau_pt_preSF[0] = tau.pt # store original tau pt before applying TES
         tau.es   = 1 # store energy scale for propagating to MET
         genmatch = tau.genPartFlav
-        #if genmatch==5: # real tau
-          #if self.tes!=None: # user-defined energy scale (for TES studies) #TO_DO TAU ENERGY SCALES
-          #  tes = self.tes
-          #else: # (apply by default)
-          #  tes = self.tesTool.getTES(tau.pt,tau.decayMode,unc=self.tessys)
-          #if tes!=1:
-          #  tau.pt   *= tes
-          #  tau.mass *= tes
-          #  tau.es    = tes
-        if self.ltf and 0<genmatch<5: # lepton -> tau fake
+        if genmatch==5: # real tau
+          if self.tes!=None: # user-defined energy scale (for TES studies)
+            tes = self.tes
+          else: # recommended energy scale (apply by default)
+            tes = 1 #self.tesTool.getTES(tau.pt,tau.decayMode,unc=self.tessys)
+          if tes!=1:
+            tau.pt   *= tes
+            tau.mass *= tes
+            tau.es    = tes # store for later reuse
+          if self.era in ["2022EE"]: #, "2018UL", "2022_preEE", "2022_postEE", "2023", "2023BPix"]: # only for some samples, otherwise no corrections from correctionlib
+            tes_correction = self.deepTauSFTool.tes(tau.pt, tau.eta, tau.decayMode, 5, self.wp_vsjet, self.wp_vse, self.syst)
+            self.out.tes_sf[0] = tes_correction
+            tau.pt   *= tes_correction
+            tau.mass *= tes_correction
+            tau.es    = tes_correction # store for later reuse
+        elif self.ltf and 0<genmatch<5: # lepton -> tau fake
           tau.pt   *= self.ltf
           tau.mass *= self.ltf
-          tau.es    = self.ltf
-        #elif genmatch in [1,3]: # electron -> tau fake (apply by default, override with 'ltf=1.0') #TO_DO (FES)
-          #fes = self.fesTool.getFES(tau.eta,tau.decayMode,unc=self.fes)
-          #tau.pt   *= fes
-          #tau.mass *= fes
-          #tau.es    = fes
+          tau.es    = self.ltf # store for later reuse
+        #elif genmatch in [1,3]: # electron -> tau fake (apply by default, override with 'ltf=1.0')
+        #  fes = self.fesTool.getFES(tau.eta,tau.decayMode,unc=self.fes)
+        #  tau.pt   *= fes
+        #  tau.mass *= fes
+        #  tau.es    = fes
         elif self.jtf!=1.0 and genmatch==0: # jet -> tau fake
           tau.pt   *= self.jtf
           tau.mass *= self.jtf
@@ -322,33 +339,48 @@ class ModuleTauTau(ModuleTauPair):
         self.out.ltfweightDown_1[0] = 1.
         self.out.ltfweightDown_2[0] = 1.
       
-      # TAU 1 WEIGHTS
-      #if tau1.genPartFlav==5: #TO_DO
-        #self.out.idweight_1[0]        = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode) #TO_DO
-        #self.out.idweight_tight_1[0]  = self.tauSFs_tight.getSFvsDM(tau1.pt,tau1.decayMode) #TO_DO
-        #if self.dosys: #TO_DO
-          #self.out.idweightUp_1[0]    = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode,unc='Up') #TO_DO
-          #self.out.idweightDown_1[0]  = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode,unc='Down') #TO_DO
-      #if tau1.genPartFlav>0:
-        #ltfTool = self.etfSFs if tau1.genPartFlav in [1,3] else self.mtfSFs #TO_DO
-        #self.out.ltfweight_1[0]       = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav) #TO_DO
-        #if self.dosys:
-          #self.out.ltfweightUp_1[0]   = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav,unc='Up') #TO_DO
-          #self.out.ltfweightDown_1[0] = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav,unc='Down') #TO_DO
-      
-      # TAU 2 WEIGHTS
-      #if tau1.genPartFlav==5:
-        #self.out.idweight_2[0]        = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode) #TO_DO
-        #self.out.idweight_tight_2[0]  = self.tauSFs_tight.getSFvsDM(tau1.pt,tau1.decayMode) #TO_DO
-        #if self.dosys:
-          #self.out.idweightUp_2[0]    = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode,unc='Up') #TO_DO
-          #self.out.idweightDown_2[0]  = self.tauSFs.getSFvsDM(tau1.pt,tau1.decayMode,unc='Down') #TO_DO
-      #if tau1.genPartFlav>0:
-        #ltfTool = self.etfSFs if tau1.genPartFlav in [1,3] else self.mtfSFs #TO_DO
-        #self.out.ltfweight_2[0]       = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav) #TO_DO
-        #if self.dosys:
-          #self.out.ltfweightUp_2[0]   = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav,unc='Up') #TO_DO
-          #self.out.ltfweightDown_2[0] = ltfTool.getSFvsEta(tau1.eta,tau1.genPartFlav,unc='Down') #TO_DO
+      if self.era in ["2022EE"]:
+        genmatch1 = tau1.genPartFlav
+        if genmatch1==5: # real tau
+          self.out.idweight_1[0]        = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, self.syst, "pt")
+          self.out.idweight_dm_1[0]     = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, self.syst, "dm")
+          self.out.idweight_medium_1[0] = 1.0 # for now 
+          if self.dosys:
+            self.out.idweightUp_1[0]      = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, "up", "pt")
+            self.out.idweightDown_1[0]    = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, "down", "pt")
+            self.out.idweightUp_dm_1[0]   = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, "up", "dm")
+            self.out.idweightDown_dm_1[0] = self.deepTauSFTool.sf_vsjet(tau1.pt, tau1.decayMode, genmatch1, self.wp_vsjet, self.wp_vse, "down", "dm")
+        elif genmatch1 in [1,3]: # electron -> tau fake
+          self.out.ltfweight_1[0]       = self.deepTauSFTool.sf_vse(tau1.eta, tau1.decayMode, genmatch1, self.wp_vse, self.syst)
+          if self.dosys:
+            self.out.ltfweightUp_1[0]   = self.deepTauSFTool.sf_vse(tau1.eta, tau1.decayMode, genmatch1, self.wp_vse, "up")
+            self.out.ltfweightDown_1[0] = self.deepTauSFTool.sf_vse(tau1.eta, tau1.decayMode, genmatch1, self.wp_vse, "down")
+        elif genmatch1 in [2,4]: # muon -> tau fake
+          self.out.ltfweight_1[0]       = self.deepTauSFTool.sf_vsmu(tau1.eta, genmatch1, self.wp_vsmu, self.syst)
+          if self.dosys:
+            self.out.ltfweightUp_1[0]   = self.deepTauSFTool.sf_vsmu(tau1.eta, genmatch1, self.wp_vsmu, "up")
+            self.out.ltfweightDown_1[0] = self.deepTauSFTool.sf_vsmu(tau1.eta, genmatch1, self.wp_vsmu, "down")
+
+        genmatch2 = tau2.genPartFlav
+        if genmatch2==5: # real tau
+          self.out.idweight_2[0]        = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, self.syst, "pt")
+          self.out.idweight_dm_2[0]     = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, self.syst, "dm")
+          self.out.idweight_medium_2[0] = 1.0 # for now 
+          if self.dosys:
+            self.out.idweightUp_2[0]      = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, "up", "pt")
+            self.out.idweightDown_2[0]    = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, "down", "pt")
+            self.out.idweightUp_dm_2[0]   = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, "up", "dm")
+            self.out.idweightDown_dm_2[0] = self.deepTauSFTool.sf_vsjet(tau2.pt, tau2.decayMode, genmatch2, self.wp_vsjet, self.wp_vse, "down", "dm")
+        elif genmatch2 in [1,3]: # electron -> tau fake
+          self.out.ltfweight_2[0]       = self.deepTauSFTool.sf_vse(tau2.eta, tau2.decayMode, genmatch2, self.wp_vse, self.syst)
+          if self.dosys:
+            self.out.ltfweightUp_2[0]   = self.deepTauSFTool.sf_vse(tau2.eta, tau2.decayMode, genmatch2, self.wp_vse, "up")
+            self.out.ltfweightDown_2[0] = self.deepTauSFTool.sf_vse(tau2.eta, tau2.decayMode, genmatch2, self.wp_vse, "down")
+        elif genmatch2 in [2,4]: # muon -> tau fake
+          self.out.ltfweight_2[0]       = self.deepTauSFTool.sf_vsmu(tau2.eta, genmatch2, self.wp_vsmu, self.syst)
+          if self.dosys:
+            self.out.ltfweightUp_2[0]   = self.deepTauSFTool.sf_vsmu(tau2.eta, genmatch2, self.wp_vsmu, "up")
+            self.out.ltfweightDown_2[0] = self.deepTauSFTool.sf_vsmu(tau2.eta, genmatch2, self.wp_vsmu, "down")  
 
     # MET & DILEPTON VARIABLES
     self.fillMETAndDiLeptonBranches(event,tau1,tau2,met,met_vars)

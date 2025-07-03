@@ -104,6 +104,8 @@ class TreeProducerTauTau(TreeProducerTauPair):
       self.addBranch('idweight_tight_2',         'f', 1., title="tau ID efficiency SF")
       self.addBranch('ltfweight_1',              'f', 1., title="lepton -> tau fake rate SF")
       self.addBranch('ltfweight_2',              'f', 1., title="lepton -> tau fake rate SF")
+      self.addBranch('tau_pt_preSF',      'f', title="no correction applied to tau pt")
+      self.addBranch('tes_sf',      'f', title="tau energy scale correction")
       if module.dosys: # systematic variation (only for nominal tree)
         self.addBranch('idweightUp_1',           'f', 1.)
         self.addBranch('idweightUp_2',           'f', 1.)
@@ -129,7 +131,7 @@ class TreeProducerTauTau(TreeProducerTauPair):
       self.addBranch(f"tau2_prod{i}_phi",   'f', -1, title=f"Phi of tau2 product {i}")
       self.addBranch(f"tau2_prod{i}_pdgId", 'i', -1, title=f"PDG ID of tau2 product {i}")
 
-    for i in range(5):
+    for i in range(7):
       self.addBranch(f"gentau1_prod{i}_pt",    'f', -1, title=f"Transverse momentum of generated tau1 product {i}")
       self.addBranch(f"gentau1_prod{i}_eta",   'f', -1, title=f"Eta of generated tau1 product {i}")
       self.addBranch(f"gentau1_prod{i}_phi",   'f', -1, title=f"Phi of generated tau1 product {i}")

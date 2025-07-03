@@ -45,6 +45,7 @@ class TreeProducerMuTau(TreeProducerTauPair):
     self.addBranch('dz_2',                       'f')
     self.addBranch('q_2',                        'i')
     self.addBranch('dm_2',                       'i')
+    self.addBranch('dmPNet_2',                'i', title="PNet decay mode")
     self.addBranch('iso_2',                      'f', title="rawIso")
     self.addBranch('idiso_2',                    'i', title="rawIso WPs")
     #self.addBranch('rawAntiEle_2',               'f') # not available anymore in nanoAODv9
@@ -109,9 +110,9 @@ class TreeProducerMuTau(TreeProducerTauPair):
 
     
         
-    #############
-    #  HiggsCP  #
-    #############
+    #######################
+    #  HiggsCP & FastMTT  #
+    #######################
 
     for i in range(5):
       self.addBranch(f"tau_prod{i}_pt",    'f', -1, title=f"Transverse momentum of tau product {i}")
@@ -159,6 +160,10 @@ class TreeProducerMuTau(TreeProducerTauPair):
     #############
     #  FastMTT  #
     #############
+
+    self.addBranch('mtt', 'f', -1, title="FastMTT mass of mu-tau system")
+    self.addBranch('pt_mtt_1', 'f', -1, title="FastMTT Pt of mu-tau system, muon leg")
+    self.addBranch('pt_mtt_2', 'f', -1, title="FastMTT Pt of mu-tau system, tau leg")
 
     self.addBranch('fastMTT_X1', 'f', -1, title="Fraction of first tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")
     self.addBranch('fastMTT_X2', 'f', -1, title="Fraction of second tau energy carried by its visible products. Calculated with the fastMTT algorithm with window constraint.")

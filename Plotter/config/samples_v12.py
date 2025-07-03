@@ -14,7 +14,7 @@ def getsampleset(channel,era,**kwargs):
   verbosity = LOG.getverbosity(kwargs)
   year     = getyear(era) # get integer year
   fname    = kwargs.get('fname', "$PICODIR/$SAMPLE_$CHANNEL$TAG.root" ) # file name pattern of pico files
-  split    = kwargs.get('split',    ['DY'] if 'tau' in channel else [ ] ) # split samples (e.g. DY) into genmatch components
+  split    = kwargs.get('split',    ['DY', 'TT', 'ST'] if 'tau' in channel else [ ] ) # split samples (e.g. DY) into genmatch components
   join     = kwargs.get('join',     ['VV','Top', 'VVV','HTT'] if era=='2022EE' else ['VV','Top'] ) # join samples (e.g. VV, top)
   rmsfs    = ensurelist(kwargs.get('rmsf', [ ])) # remove the tau ID SF, e.g. rmsf=['idweight_2','ltfweight_2']
   addsfs   = ensurelist(kwargs.get('addsf', [ ])) # add extra weight to all samples
@@ -142,17 +142,60 @@ def getsampleset(channel,era,**kwargs):
      #   # the cross section for this exact samples is 1885.0 which is ~ 1/3 the total DY->LL cross section (expected since it only selects taus and not electrons and muons)
      #   # the filter efficiency for this sample (due to tau BRs + kinematic cuts on tau decay products) is 2.865e-02 
     if '2022EE' in era:
+      Higgs_amplify= 1
       expsamples = [ # table of MC samples to be converted to Sample objects
       # GROUP NAME                     TITLE                 XSEC      EXTRA OPTIONS
+      # CP_Signal H->tau tau
+      # Filter efficiencies: https://gitlab.cern.ch/dwinterb/HiggsDNA/-/blob/lr_updates/scripts/ditau/config/Run3_2022/filter_efficiencies.yaml?ref_type=heads
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay', "ggH CPodd UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay', "ggH MM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay', "ggH SM UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay"]}),
+      # ('HTT','ZHToTauTau_UncorrelatedDecay_UnFiltered', "ZH UnFiltered", 0.05920*Higgs_amplify, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_UnFiltered', "ggH UnFiltered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','WplusHToTauTau_UncorrelatedDecay_UnFiltered', "WplusH UnFiltered", 0.05575*Higgs_amplify, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','WminusHToTauTau_UncorrelatedDecay_UnFiltered', "WminusH UnFiltered", 0.03561*Higgs_amplify, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','VBFHToTauTau_UncorrelatedDecay_UnFiltered', "VBFH UnFiltered", 0.2558*Higgs_amplify, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_UnFiltered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', "ggH CPodd Filtered", 3.2759*Higgs_amplify, {'extraweight': 0.3848 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', "ggH MM Filtered", 3.2759*Higgs_amplify, {'extraweight':0.3848 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"]}),
+      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', "ggH SM Filtered", 3.2759*Higgs_amplify, {'extraweight':0.3847 ,"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"]}),
+      ('HTT','ZHToTauTau_UncorrelatedDecay_Filtered', "ZH Filtered", 0.05920*Higgs_amplify, {'extraweight':0.3933 ,"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_Filtered"]}),
+      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_Filtered', "ggH Filtered", 3.2759*Higgs_amplify, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','WplusHToTauTau_UncorrelatedDecay_Filtered', "WplusH Filtered", 0.05575*Higgs_amplify, {'extraweight':0.3743 ,"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','WminusHToTauTau_UncorrelatedDecay_Filtered', "WminusH Filtered", 0.03561*Higgs_amplify, {'extraweight':0.3944 ,"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_Filtered"]}),
+      ('HTT','VBFHToTauTau_UncorrelatedDecay_Filtered', "VBFH Filtered", 0.2558*Higgs_amplify, {'extraweight':0.4091 ,"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_Filtered"]}),
       # DY LO samples
-      ('DY', "DYto2L_M_50_madgraphMLM", "Drell-Yan 50", 5455.0 * kfactor_dy, { 'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_1J_madgraphMLM", "Drell-Yan 1J 50", 978.3 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_1J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_2J_madgraphMLM", "Drell-Yan 2J 50", 315.1 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_2J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_3J_madgraphMLM", "Drell-Yan 3J 50", 93.7 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_3J_madgraphMLM"]}),
-      ('DY', "DYto2L_M_50_4J_madgraphMLM", "Drell-Yan 4J 50", 45.4 * kfactor_dy, {'extraweight': dyweight, "nevts":nevts_json_new["DYto2L_M_50_4J_madgraphMLM"]}),
-      # DY 10-50 samples
-      # ('DY', "DYto2L_M_10to50_amcatnloFXFX", "Drell-Yan 10-50 NLO", 20950.0, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_10to50_amcatnloFXFX"]}),
-      ('DY', "DYto2L_M_10to50_madgraphMLM", "Drell-Yan 10-50", 17380.0, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_10to50_madgraphMLM"]}),
+      ( 'DY', "DYto2Mu_MLL_10to50_powheg",   "Drell-Yan 10 to 50",       6744*1.0, {'extraweight': dyweight, 'nevts': 1418050, 'sumw':1301142} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_50to120_powheg",  "Drell-Yan 50 to 120",      2219*kfactor_dy, {'extraweight': dyweight, 'nevts': 2820937, 'sumw':2763691.0} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_120to200_powheg", "Drell-Yan 120 to 200",     21.65*kfactor_dy, {'extraweight': dyweight, 'nevts': 1453748, 'sumw':1438952.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_200to400_powheg", "Drell-Yan 200 to 400",     3.058*kfactor_dy, {'extraweight': dyweight, 'nevts': 853443, 'sumw':849855.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_400to800_powheg", "Drell-Yan 400 to 800",     0.2691*kfactor_dy, {'extraweight': dyweight, 'nevts': 874240, 'sumw':873292.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_800to1500_powheg", "Drell-Yan 800 to 1500",   0.01915*kfactor_dy, {'extraweight': dyweight, 'nevts': 579560, 'sumw': 579456.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_1500to2500_powheg", "Drell-Yan 1500 to 2500", 0.001111*kfactor_dy, {'extraweight': dyweight,'nevts': 590523, 'sumw':590493.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_2500to4000_powheg", "Drell-Yan 2500 to 4000", 0.00005949*kfactor_dy, {'extraweight': dyweight,'nevts': 299278, 'sumw':299274.0} ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_4000to6000_powheg", "Drell-Yan 4000 to 6000", 0.000001558*kfactor_dy, {'extraweight': dyweight, 'nevts': 289200, 'sumw':289198.0}  ), # LO times kfactor
+      ( 'DY', "DYto2Mu_MLL_6000_powheg",      "Drell-Yan 6000",           3.519e-8*kfactor_dy, {'extraweight': dyweight ,'nevts': 145002, 'sumw':145002.0}  ), # LO times kfactor
+      
+      ( 'DY', "DYto2Tau_MLL_10to50_powheg",   "Drell-Yan 10 to 50",       6744.0*1.0, {'extraweight': dyweight, 'nevts': 1459245, 'sumw':1338709.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_50to120_powheg",  "Drell-Yan 50 to 120",      2219*kfactor_dy, {'extraweight': dyweight, 'nevts': 2967285, 'sumw':2907117.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_120to200_powheg", "Drell-Yan 120 to 200",     21.65*kfactor_dy, {'extraweight': dyweight, 'nevts': 1498536, 'sumw':1483110.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_200to400_powheg", "Drell-Yan 200 to 400",     3.058*kfactor_dy, {'extraweight': dyweight, 'nevts': 876608, 'sumw': 872968.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_400to800_powheg", "Drell-Yan 400 to 800",     0.2691*kfactor_dy, {'extraweight': dyweight, 'nevts': 898556, 'sumw':897512.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_800to1500_powheg", "Drell-Yan 800 to 1500",   0.01915*kfactor_dy, {'extraweight': dyweight, 'nevts': 581254, 'sumw':581124.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_1500to2500_powheg", "Drell-Yan 1500 to 2500", 0.001111*kfactor_dy, {'extraweight': dyweight, 'nevts': 600000, 'sumw':599982.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_2500to4000_powheg", "Drell-Yan 2500 to 4000", 0.00005949*kfactor_dy, {'extraweight': dyweight, 'nevts': 300000, 'sumw':299996.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_4000to6000_powheg", "Drell-Yan 4000 to 6000", 0.000001558*kfactor_dy, {'extraweight': dyweight, 'nevts': 300000, 'sumw':299998.0} ), # LO times kfactor
+      ( 'DY', "DYto2Tau_MLL_6000_powheg",      "Drell-Yan 6000",          3.519e-8*kfactor_dy, {'extraweight': dyweight, 'nevts': 146995, 'sumw':146995.0} ), # LO times kfactor
+      
+      ( 'DY', "DYto2E_MLL_10to50_powheg",   "Drell-Yan 10 to 50",       6744*1.0, {'extraweight': dyweight,'nevts': 1477950, 'sumw':1356076.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_50to120_powheg",  "Drell-Yan 50 to 120",      2219*kfactor_dy, {'extraweight': dyweight,'nevts': 2918148, 'sumw':2859284.0} ), # LO times kfactor  
+      ( 'DY', "DYto2E_MLL_120to200_powheg", "Drell-Yan 120 to 200",     21.65*kfactor_dy, {'extraweight': dyweight,'nevts': 1497870, 'sumw':1482424.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_200to400_powheg", "Drell-Yan 200 to 400",     3.058*kfactor_dy, {'extraweight': dyweight,'nevts': 867524, 'sumw':864092.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_400to800_powheg", "Drell-Yan 400 to 800",     0.2691*kfactor_dy, {'extraweight': dyweight,'nevts': 891121, 'sumw':890161.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_800to1500_powheg", "Drell-Yan 800 to 1500",   0.01915*kfactor_dy, {'extraweight': dyweight,'nevts': 600000, 'sumw':599902.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_1500to2500_powheg", "Drell-Yan 1500 to 2500", 0.001111*kfactor_dy, {'extraweight': dyweight,'nevts': 586690, 'sumw':586670.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_2500to4000_powheg", "Drell-Yan 2500 to 4000", 0.00005949*kfactor_dy, {'extraweight': dyweight,'nevts': 290480, 'sumw':290470.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_4000to6000_powheg", "Drell-Yan 4000 to 6000", 0.000001558*kfactor_dy, {'extraweight': dyweight,'nevts': 298948, 'sumw':298946.0} ), # LO times kfactor
+      ( 'DY', "DYto2E_MLL_6000_powheg",      "Drell-Yan 6000",           3.519e-8*kfactor_dy, {'extraweight': dyweight,'nevts': 145094, 'sumw':145094.0} ), # LO times kfactor
       # W + Jets LO samples
       ('WJ', "WtoLNu_madgraphMLM", "W + jets", 55300.0 * kfactor_wj, {"nevts":nevts_json_new["WtoLNu_madgraphMLM"]}),
       ('WJ', "WtoLNu_1J_madgraphMLM", "W + 1J", 9128.0 * kfactor_wj, {"nevts":nevts_json_new["WtoLNu_1J_madgraphMLM"]}),
@@ -191,39 +234,6 @@ def getsampleset(channel,era,**kwargs):
       ('VVV', "WWZ_4F", "WWZ 4F", 0.1851, {"nevts":nevts_json_new["WWZ_4F"]}),
       ('VVV', "WZZ", "WZZ", 0.06206, {"nevts":nevts_json_new["WZZ"]}),
       ('VVV', "ZZZ", "ZZZ", 0.01591, {"nevts":nevts_json_new["ZZZ"]}),
-      # CP_Signal H->tau tau
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay', "ggH CPodd UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay', "ggH MM UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay', "ggH SM UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_UnFiltered_ProdAndDecay"]}),
-      # ('HTT','ZHToTauTau_UncorrelatedDecay_UnFiltered', "ZH UnFiltered", 0.05920, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','GluGluHTo2Tau_UncorrelatedDecay_UnFiltered', "ggH UnFiltered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','WplusHToTauTau_UncorrelatedDecay_UnFiltered', "WplusH UnFiltered", 0.05575, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','WminusHToTauTau_UncorrelatedDecay_UnFiltered', "WminusH UnFiltered", 0.03561, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      # ('HTT','VBFHToTauTau_UncorrelatedDecay_UnFiltered', "VBFH UnFiltered", 0.2558, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_UnFiltered"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay', "ggH CPodd Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_CPodd_Filtered_ProdAndDecay"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay', "ggH MM Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_MM_Filtered_ProdAndDecay"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay', "ggH SM Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_SM_Filtered_ProdAndDecay"]}),
-      ('HTT','ZHToTauTau_UncorrelatedDecay_Filtered', "ZH Filtered", 0.05920, {"nevts":nevts_json_new["ZHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','GluGluHTo2Tau_UncorrelatedDecay_Filtered', "ggH Filtered", 3.2759, {"nevts":nevts_json_new["GluGluHTo2Tau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','WplusHToTauTau_UncorrelatedDecay_Filtered', "WplusH Filtered", 0.05575, {"nevts":nevts_json_new["WplusHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','WminusHToTauTau_UncorrelatedDecay_Filtered', "WminusH Filtered", 0.03561, {"nevts":nevts_json_new["WminusHToTauTau_UncorrelatedDecay_Filtered"]}),
-      ('HTT','VBFHToTauTau_UncorrelatedDecay_Filtered', "VBFH Filtered", 0.2558, {"nevts":nevts_json_new["VBFHToTauTau_UncorrelatedDecay_Filtered"]}),
-      # DY NLO samples
-      # ('DY', "DYto2L_M_50_amcatnloFXFX", "Drell-Yan 50 NLO", 6748.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_amcatnloFXFX_ext1", "Drell-Yan 50 NLO ext1", 6748.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_amcatnloFXFX_ext1"]}),
-      # ('DY', "DYto2L_M_50_0J_amcatnloFXFX", "Drell-Yan 0J 50 NLO", 5364.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_0J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_1J_amcatnloFXFX", "Drell-Yan 1J 50 NLO", 1019.0 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_2J_amcatnloFXFX", "Drell-Yan 2J 50 NLO", 375.3 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_2J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX", "Drell-Yan 50 1J 40-100 NLO", 475.3 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_40to100_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX", "Drell-Yan 50 1J 100-200 NLO", 45.42 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_100to200_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX", "Drell-Yan 50 1J 200-400 NLO", 3.382 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_200to400_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX", "Drell-Yan 50 1J 400-600 NLO", 0.1162 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_400to600_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_600_1J_amcatnloFXFX", "Drell-Yan 50 1J 600+ NLO", 0.01392 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_600_1J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX", "Drell-Yan 50 2J 40-100 NLO", 179.3 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_40to100_2J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX", "Drell-Yan 50 2J 100-200 NLO", 51.68 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_100to200_2J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX", "Drell-Yan 50 2J 200-400 NLO", 7.159 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_200to400_2J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX", "Drell-Yan 50 2J 400-600 NLO", 0.4157 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_400to600_2J_amcatnloFXFX"]}),
-      # ('DY', "DYto2L_M_50_PTLL_600_2J_amcatnloFXFX", "Drell-Yan 50 2J 600+ NLO", 0.07019 * kfactor_dy_NLO, {'extraweight': dyweight, "nevts": nevts_json_new["DYto2L_M_50_PTLL_600_2J_amcatnloFXFX"]}),
     ]   
 
   else:
@@ -289,24 +299,28 @@ def getsampleset(channel,era,**kwargs):
       sampleset.stitch("W*LNu*Jets*",    incl='WJetsToLNu-4Jets',  name='WJ', cme=cme) # W + jets
   if '2022EE' in era:
     sampleset.stitch("W*LNu*",    incl='WtoLNu_madgraphMLM',  name='WJ', cme=cme) # W + jets
-    sampleset.stitch("DYto2L*", incl='DYto2L_M_50_madgraphMLM', name="DY", cme=cme)
     #sampleset.stitch("DYto2L*amcatnloFXFX*", incl='DYto2L_M_50_amcatnloFXFX_ext1', name="DY", cme=cme) # Drell-Yan NLO
   else:
       sampleset.stitch("DYto2L-4Jets_MLL-50*", incl='DYto2L-4Jets_MLL-50', name="DY_M50", cme=cme)  
   # JOIN
-  sampleset.join('DY', name='DY' ) # Drell-Yan, M < 50 GeV + M > 50 GeV
   if '2022EE' in era:
-    sampleset.join('VVV', 'WWW_4F', 'WWZ_4F', 'WZZ' , 'ZZZ',name='Triboson' ) # VVV
     if 'HTT' in join:
-      sampleset.join('HTT', '*UncorrelatedDecay*', name='Higgs')
-  if 'VV' in join:
-    sampleset.join('VV','WZ','WW','ZZ', name='VV' ) # Diboson
+      if Higgs_amplify==1:
+        sampleset.join('HTT', '*UncorrelatedDecay*', name='Higgs')
+      else:
+        sampleset.join('HTT', '*UncorrelatedDecay*', name=f'{Higgs_amplify} x Higgs') 
+    sampleset.join('VV','WZ','WW','ZZ','VVV','WWW_4F','WWZ_4F','WZZ','ZZZ',name='Multi-boson') # Multi-boson #     
+  else:
+    if 'VV' in join:
+      sampleset.join('VV','WZ','WW','ZZ', name='VV' ) # Diboson
+  sampleset.join('DY', name='DY' ) # Drell-Yan, M < 50 GeV + M > 50 GeV
   if 'TT' in join and era!='year':
     sampleset.join('TT', name='TT' ) # ttbar
   if 'ST' in join:
     sampleset.join('ST', name='ST' ) # single top
   if 'Top' in join:
     sampleset.join('TT','ST', name='Top' ) # ttbar + single top
+  # sampleset.join('Multi-boson', 'DY', 'WJ', 'Top' ,name='MC')  # MC samples test
   sampleset.printtable(merged=True, split=True)
   
   # SPLIT
