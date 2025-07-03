@@ -495,7 +495,40 @@ class ModuleTauPair(Module):
     #self.out.tauProdID[0]            = event.tauProd_pdgId
     #getchargedPion(event)
 
+    #Here add fastmtt mass
+    from TauFW.PicoProducer.HiggsCPtools.FastMTT import FastMTT
+    import numpy as np
+    self.out.metcov00[0]               = event.PFMET_covXX #TO_DO
+    self.out.metcov01[0]               = event.PFMET_covXY #TO_DO
+    self.out.metcov11[0]               = event.PFMET_covYY #TO_DO
+    covMET = np.zeros((1, 2, 2))
+    covMET[0, 0, 0] = event.PFMET_covXX
+    covMET[0, 1, 0] = event.PFMET_covXY
+    covMET[0, 0, 1] = event.PFMET_covXY
+    covMET[0, 1, 1] = event.PFMET_covYY
+
+    # Build measuredTauLeptons array: shape (1, 2, 6)
+    # Format: [decay_type, pt, eta, phi, mass, decay_mode]
+    measuredTauLeptons = np.array([[
+    [3, float(self.out.pt_1[0]), float(self.out.eta_1[0]), float(self.out.phi_1[0]), float(self.out.m_1[0]), -1],
+    [1, float(self.out.pt_2[0]), float(self.out.eta_2[0]), float(self.out.phi_2[0]), float(self.out.m_2[0]), int(self.out.dm_2[0])],
+    ]])
+    met_px = np.array([met.Pt() * np.cos(met.Phi())])
+    met_py = np.array([met.Pt() * np.sin(met.Phi())])
+
+    # Run FastMTT
+    fastmtt = FastMTT()
+    fastmtt.run(measuredTauLeptons, met_px, met_py, covMET)
     
+    if hasattr(fastmtt, "mass") and len(np.atleast_1d(fastmtt.mass)) >0:
+      self.out.mtt[0]      = fastmtt.mass[0]
+      self.out.pt_mtt_1[0] = np.sqrt(fastmtt.tau1P4[0,0]**2 + fastmtt.tau1P4[0,1]**2)
+      self.out.pt_mtt_2[0] = np.sqrt(fastmtt.tau2P4[0,0]**2 + fastmtt.tau2P4[0,1]**2)
+    else:
+      self.out.mtt[0]      = -1.
+      self.out.pt_mtt_1[0] = -1.
+      self.out.pt_mtt_2[0] = -1.
+
     ###self.out.fixedGridRhoFastjetAll[0] = event.fixedGridRhoFastjetAll
     
     # PZETA
@@ -522,4 +555,5 @@ class ModuleTauPair(Module):
     self.out.dphi_ll[0]   = deltaPhi(self.out.phi_1[0], self.out.phi_2[0])
     self.out.deta_ll[0]   = abs(self.out.eta_1[0] - self.out.eta_2[0])
     self.out.chi[0]       = exp(abs(tau1.Rapidity() - tau2.Rapidity()))
+    
     
