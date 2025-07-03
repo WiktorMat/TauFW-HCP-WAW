@@ -239,16 +239,6 @@ class ModuleMuTau(ModuleTauPair):
     self.out.idTight_1[0]                  = muon.tightId
     self.out.idHighPt_1[0]                 = muon.highPtId
 
-    
-    # HIGGS CP
-    self.out.tau1_IP0[0] = muon.IPx
-    self.out.tau1_IP1[0] = muon.IPy
-    self.out.tau1_IP2[0] = muon.IPz
-
-    self.out.tau2_IP0[0] = tau.IPx
-    self.out.tau2_IP1[0] = tau.IPy
-    self.out.tau2_IP2[0] = tau.IPz
-
     # TAU
     self.out.pt_2[0]                       = tau.pt
     self.out.eta_2[0]                      = tau.eta
