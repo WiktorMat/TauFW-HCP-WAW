@@ -6,6 +6,14 @@ from TauFW.PicoProducer.analysis.TreeProducerMuTau import *
 from TauFW.PicoProducer.analysis.ModuleTauPair import *
 from TauFW.PicoProducer.analysis.utils import LeptonTauPair, loosestIso, idIso, matchgenvistau, matchtaujet, filtermutau
 from TauFW.PicoProducer.corrections.MuonSFs import *
+
+
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.PhiCP_gen_reco import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.GenParticles import *
+from TauFW.PicoProducer.FastMTT.FastMTT import FastMTT
+from TauFW.PicoProducer.analysis.HiggsCPtools.Polarimetric import *
+from TauFW.PicoProducer.analysis.HiggsCPtools.Data_Dump import *
 #from TauFW.PicoProducer.corrections.TrigObjMatcher import loadTriggerDataFromJSON, TrigObjMatcher
 #from TauPOG.TauIDSFs.TauIDSFTool import TauIDSFTool, TauESTool, campaigns # old way, corrections from root files
 
