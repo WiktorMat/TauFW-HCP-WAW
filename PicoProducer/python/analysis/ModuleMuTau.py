@@ -294,6 +294,7 @@ class ModuleMuTau(ModuleTauPair):
     self.out.dz_2[0]                       = tau.dz
     self.out.q_2[0]                        = tau.charge
     self.out.dm_2[0]                       = tau.decayMode
+    self.out.dmPNet_2[0]                  = tau.decayModePNet # PNet decay mode
     self.out.iso_2[0]                      = tau.rawIso
     #self.out.idiso_2[0]                    = idIso(tau) # cut-based tau isolation (rawIso) #TO_DO
     #self.out.rawAntiEle_2[0]               = tau.rawAntiEle # not available anymore in nanoAODv9
