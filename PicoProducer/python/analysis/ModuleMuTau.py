@@ -166,15 +166,25 @@ class ModuleMuTau(ModuleTauPair):
         #  tau.pt   *= fes
         #  tau.mass *= fes
         #  tau.es    = fes
-        elif self.jtf!=1.0 and genmatch==0: # jet -> tau fake
-          tau.pt   *= self.jtf
-          tau.mass *= self.jtf
-          tau.es    = self.jtf
+        #elif self.jtf!=1.0 and genmatch==0: # jet -> tau fake
+        #  tau.pt   *= self.jtf
+        #  tau.mass *= self.jtf
+        #  tau.es    = self.jtf
       if tau.pt<self.tauCutPt: continue
       taus.append(tau)
     if len(taus)==0:
       return False
     self.out.cutflow.fill('tau')
+    
+      #print(tauProd.pdgId)
+      #if tauProd.pdgId == 211:
+      #  charged_pions.append(tauProd)
+
+      #if (tau.decayMode == 10 or tau.decayMode == 11) and tauProd.pdgId == 22:
+      #  print(tau.decayMode)
+      #  print("Photon!")
+
+    ### TEST ^ ###
     
     
     ##### MUTAU PAIR #################################
