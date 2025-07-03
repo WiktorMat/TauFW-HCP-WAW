@@ -489,6 +489,11 @@ class ModuleTauPair(Module):
     ###self.out.puppimetpt[0]             = event.PuppiMET_pt
     ###self.out.puppimetphi[0]            = event.PuppiMET_phi
     ###self.out.metsignificance[0]        = event.MET_significance
+    self.out.metcov00[0]               = event.PuppiMET_covXX #TO_DO
+    self.out.metcov01[0]               = event.PuppiMET_covXY #TO_DO
+    self.out.metcov11[0]               = event.PuppiMET_covYY #TO_DO
+    #self.out.tauProdID[0]            = event.tauProd_pdgId
+    #getchargedPion(event)
 
     #Here add fastmtt mass
     from TauFW.PicoProducer.HiggsCPtools.FastMTT import FastMTT
